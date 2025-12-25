@@ -2,23 +2,27 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function SignupPage() {
-  const router = useRouter();
+  const { signup } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+    setLoading(true);
 
-    // Mock authentication
-    if (name && email && password) {
-      router.push("/palace/dashboard");
-    } else {
-      setError("Please fill in all fields");
+    try {
+      await signup(name, email, password);
+    } catch (err: any) {
+      setError(err.message || "Failed to create account");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -100,9 +104,10 @@ export default function SignupPage() {
 
             <button
               type="submit"
-              className="w-full py-3 bg-accent text-white rounded-lg font-medium hover:bg-accent-dark calm-transition shadow-soft hover:shadow-medium"
+              disabled={loading}
+              className="w-full py-3 bg-accent text-white rounded-lg font-medium hover:bg-accent-dark calm-transition shadow-soft hover:shadow-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Create account
+              {loading ? "Creating account..." : "Create account"}
             </button>
           </form>
 

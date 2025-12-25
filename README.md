@@ -4,14 +4,24 @@ Your thinking space, reimagined. A calm, visual way to organize thoughts, ideas,
 
 ## Overview
 
-Mind Palace is a personal cognitive environment with two distinct but connected modes:
+Mind Palace is a **fully stateful personal cognitive environment** with two distinct but connected modes:
 
 - **Dashboard Mode** — Structured, glanceable, widget-based interface (Plecto-style)
 - **Palace Mode** — Infinite canvas for spatial thinking (Excalidraw-style)
 
 This is not social media. This is not a productivity tool with pressure. It's a quiet studio for your mind.
 
+**NEW**: Now with full database integration! Your data is securely stored and synced across sessions.
+
 ## Features
+
+### Authentication & Data Persistence ✨
+
+- **User Accounts** — Sign up and log in securely
+- **JWT Authentication** — Secure token-based authentication
+- **Auto-Save** — All changes automatically saved to cloud database
+- **Data Isolation** — Your data is private and secure
+- **Cross-Device** — Access your palace from anywhere
 
 ### Dashboard Mode
 
@@ -24,6 +34,7 @@ This is not social media. This is not a productivity tool with pressure. It's a 
   - Links
   - Time and weather
 - Clean, organized view of what matters
+- **Persistent across sessions** — Your layout is saved
 
 ### Palace Mode
 
@@ -39,6 +50,7 @@ This is not social media. This is not a productivity tool with pressure. It's a 
 - Drag nodes freely
 - Double-click to edit
 - Visual connections between ideas
+- **All nodes saved automatically** — Positions, content, everything
 
 ## Design Philosophy
 
@@ -60,11 +72,25 @@ This is not social media. This is not a productivity tool with pressure. It's a 
 
 - **Framework**: Next.js 14 (App Router)
 - **Language**: TypeScript
+
+## Tech Stack
+
+- **Framework**: Next.js 14 with App Router
+- **Language**: TypeScript
 - **Styling**: Tailwind CSS
+- **Database**: MongoDB with Mongoose ODM
+- **Authentication**: JWT with bcrypt
 - **Animations**: Framer Motion
 - **Icons**: Heroicons
 
 ## Getting Started
+
+### Prerequisites
+
+- Node.js 18+ installed
+- MongoDB Atlas account (or local MongoDB)
+
+### Installation
 
 1. Install dependencies:
 
@@ -72,13 +98,29 @@ This is not social media. This is not a productivity tool with pressure. It's a 
 npm install
 ```
 
-2. Run the development server:
+2. Set up environment variables - create `.env.local`:
+
+```env
+MONGODB_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret_key
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your_nextauth_secret
+```
+
+3. Run the development server:
 
 ```bash
 npm run dev
 ```
 
-3. Open [http://localhost:3000](http://localhost:3000)
+4. Open [http://localhost:3000](http://localhost:3000)
+
+5. **Sign up** to create your account and start using Mind Palace!
+
+### Documentation
+
+- **[DATABASE_GUIDE.md](./DATABASE_GUIDE.md)** — Database integration and API documentation
+- **[ARCHITECTURE.md](./ARCHITECTURE.md)** — System architecture
 
 ## Project Structure
 

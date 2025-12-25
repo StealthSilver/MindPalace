@@ -1,51 +1,56 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/layout/AppShell";
 import CanvasNode from "@/components/canvas/CanvasNode";
 import { useInfiniteCanvas } from "@/hooks/useInfiniteCanvas";
 import { Node, NodeType, AppMode } from "@/types";
+import { getNodes, saveNodes } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function CanvasPage() {
   const router = useRouter();
+  const { user, isLoading: authLoading } = useAuth();
   const { canvasRef, canvasState, isPanning, screenToWorld } =
     useInfiniteCanvas();
-  const [nodes, setNodes] = useState<Node[]>([
-    {
-      id: "node-1",
-      type: "note",
-      x: 100,
-      y: 100,
-      width: 250,
-      height: 180,
-      content:
-        "Welcome to your Mind Palace canvas!\n\nDouble-click to edit.\nDrag to move.",
-    },
-    {
-      id: "node-2",
-      type: "link",
-      x: 400,
-      y: 150,
-      width: 200,
-      height: 120,
-      content: "Saved links and references",
-    },
-    {
-      id: "node-3",
-      type: "todo",
-      x: 150,
-      y: 350,
-      width: 220,
-      height: 160,
-      content: "☐ Explore the canvas\n☐ Create new nodes\n☐ Connect ideas",
-    },
-  ]);
+  const [nodes, setNodes] = useState<Node[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const [draggingNode, setDraggingNode] = useState<Node | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [showNodeMenu, setShowNodeMenu] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push("/login");
+      return;
+    }
+
+    if (user) {
+      loadNodes();
+    }
+  }, [user, authLoading, router]);
+
+  const loadNodes = async () => {
+    try {
+      const data = await getNodes();
+      setNodes(data.nodes || []);
+    } catch (error) {
+      console.error("Failed to load nodes:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveNodes = async (updatedNodes: Node[]) => {
+    try {
+      await saveNodes(updatedNodes);
+    } catch (error) {
+      console.error("Failed to save nodes:", error);
+    }
+  };
 
   const handleModeChange = (mode: AppMode) => {
     if (mode === "dashboard") {
@@ -93,28 +98,30 @@ export default function CanvasPage() {
             e.clientX - rect.left,
             e.clientY - rect.top
           );
-          setNodes((prev) =>
-            prev.map((n) =>
-              n.id === draggingNode.id
-                ? {
-                    ...n,
-                    x: worldPos.x - dragOffset.x,
-                    y: worldPos.y - dragOffset.y,
-                  }
-                : n
-            )
+          const updatedNodes = nodes.map((n) =>
+            n.id === draggingNode.id
+              ? {
+                  ...n,
+                  x: worldPos.x - dragOffset.x,
+                  y: worldPos.y - dragOffset.y,
+                }
+              : n
           );
+          setNodes(updatedNodes);
         }
       }
     },
-    [draggingNode, dragOffset, canvasRef, screenToWorld]
+    [draggingNode, dragOffset, canvasRef, screenToWorld, nodes]
   );
 
-  const handleMouseUp = useCallback(() => {
+  const handleMouseUp = useCallback(async () => {
+    if (draggingNode) {
+      await handleSaveNodes(nodes);
+    }
     setDraggingNode(null);
-  }, []);
+  }, [draggingNode, nodes]);
 
-  const createNode = (type: NodeType) => {
+  const createNode = async (type: NodeType) => {
     const rect = canvasRef.current?.getBoundingClientRect();
     if (rect) {
       const worldPos = screenToWorld(
@@ -130,20 +137,39 @@ export default function CanvasPage() {
         height: 180,
         content: "",
       };
-      setNodes([...nodes, newNode]);
+      const updatedNodes = [...nodes, newNode];
+      setNodes(updatedNodes);
+      await handleSaveNodes(updatedNodes);
       setShowNodeMenu(false);
     }
   };
 
-  const updateNode = (id: string, updates: Partial<Node>) => {
-    setNodes((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, ...updates } : n))
+  const updateNode = async (id: string, updates: Partial<Node>) => {
+    const updatedNodes = nodes.map((n) =>
+      n.id === id ? { ...n, ...updates } : n
     );
+    setNodes(updatedNodes);
+    await handleSaveNodes(updatedNodes);
   };
 
-  const deleteNode = (id: string) => {
-    setNodes((prev) => prev.filter((n) => n.id !== id));
+  const deleteNode = async (id: string) => {
+    const updatedNodes = nodes.filter((n) => n.id !== id);
+    setNodes(updatedNodes);
+    await handleSaveNodes(updatedNodes);
   };
+
+  if (authLoading || loading) {
+    return (
+      <AppShell mode="canvas" onModeChange={handleModeChange}>
+        <div className="h-full flex items-center justify-center">
+          <div className="text-center space-y-4">
+            <div className="w-12 h-12 border-4 border-accent border-t-transparent rounded-full animate-spin mx-auto"></div>
+            <p className="text-gray-600">Loading...</p>
+          </div>
+        </div>
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell mode="canvas" onModeChange={handleModeChange}>

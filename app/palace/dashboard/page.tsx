@@ -1,16 +1,49 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AppShell from "@/components/layout/AppShell";
 import WidgetCard from "@/components/dashboard/WidgetCard";
-import { mockWidgets } from "@/lib/mockData";
 import { Widget, AppMode } from "@/types";
 import { useRouter } from "next/navigation";
+import { getWidgets, saveWidgets } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [widgets, setWidgets] = useState<Widget[]>(mockWidgets);
+  const { user, isLoading: authLoading } = useAuth();
+  const [widgets, setWidgets] = useState<Widget[]>([]);
   const [showWidgetLibrary, setShowWidgetLibrary] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push("/login");
+      return;
+    }
+
+    if (user) {
+      loadWidgets();
+    }
+  }, [user, authLoading, router]);
+
+  const loadWidgets = async () => {
+    try {
+      const data = await getWidgets();
+      setWidgets(data.widgets || []);
+    } catch (error) {
+      console.error("Failed to load widgets:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveWidgets = async (updatedWidgets: Widget[]) => {
+    try {
+      await saveWidgets(updatedWidgets);
+    } catch (error) {
+      console.error("Failed to save widgets:", error);
+    }
+  };
 
   const handleModeChange = (mode: AppMode) => {
     if (mode === "canvas") {
@@ -18,14 +51,45 @@ export default function DashboardPage() {
     }
   };
 
-  const handleRemoveWidget = (id: string) => {
-    setWidgets(widgets.filter((w) => w.id !== id));
+  const handleRemoveWidget = async (id: string) => {
+    const updatedWidgets = widgets.filter((w) => w.id !== id);
+    setWidgets(updatedWidgets);
+    await handleSaveWidgets(updatedWidgets);
   };
 
   const handleDragStart = (e: React.DragEvent, widget: Widget) => {
     e.dataTransfer.effectAllowed = "move";
     e.dataTransfer.setData("text/html", widget.id);
   };
+
+  const addWidget = async (widgetType: any, label: string) => {
+    const newWidget: Widget = {
+      id: `widget-${Date.now()}`,
+      type: widgetType,
+      title: label,
+      x: 0,
+      y: widgets.length,
+      width: 1,
+      height: 1,
+    };
+    const updatedWidgets = [...widgets, newWidget];
+    setWidgets(updatedWidgets);
+    await handleSaveWidgets(updatedWidgets);
+    setShowWidgetLibrary(false);
+  };
+
+  if (authLoading || loading) {
+    return (
+      <AppShell mode="dashboard" onModeChange={handleModeChange}>
+        <div className="h-full flex items-center justify-center">
+          <div className="text-center space-y-4">
+            <div className="w-12 h-12 border-4 border-accent border-t-transparent rounded-full animate-spin mx-auto"></div>
+            <p className="text-gray-600">Loading...</p>
+          </div>
+        </div>
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell mode="dashboard" onModeChange={handleModeChange}>
@@ -137,19 +201,7 @@ export default function DashboardPage() {
               ].map((widgetType) => (
                 <button
                   key={widgetType.type}
-                  onClick={() => {
-                    const newWidget: Widget = {
-                      id: `widget-${Date.now()}`,
-                      type: widgetType.type as any,
-                      title: widgetType.label,
-                      x: 0,
-                      y: widgets.length,
-                      width: 1,
-                      height: 1,
-                    };
-                    setWidgets([...widgets, newWidget]);
-                    setShowWidgetLibrary(false);
-                  }}
+                  onClick={() => addWidget(widgetType.type, widgetType.label)}
                   className={`p-6 rounded-xl border-2 border-gray-200 hover:border-${widgetType.color} hover:bg-${widgetType.color}-light calm-transition text-center`}
                 >
                   <div className="text-sm font-medium text-gray-700">
