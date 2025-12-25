@@ -5,8 +5,8 @@ import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
 
 // Force dynamic rendering for this route
-export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   try {
