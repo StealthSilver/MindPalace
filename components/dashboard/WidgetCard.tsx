@@ -77,6 +77,14 @@ export default function WidgetCard({
 
 // Widget Components
 function LineChart({ data }: any) {
+  if (!data || !data.values || data.values.length === 0) {
+    return (
+      <div className="h-32 flex items-center justify-center text-gray-400 text-sm">
+        No data available
+      </div>
+    );
+  }
+
   const max = Math.max(...data.values);
 
   return (
@@ -87,7 +95,9 @@ function LineChart({ data }: any) {
             className="w-full bg-analytics rounded-t"
             style={{ height: `${(value / max) * 100}%` }}
           />
-          <span className="text-xs text-gray-500">{data.labels[i]}</span>
+          <span className="text-xs text-gray-500">
+            {data.labels && data.labels[i] ? data.labels[i] : ""}
+          </span>
         </div>
       ))}
     </div>
@@ -95,16 +105,27 @@ function LineChart({ data }: any) {
 }
 
 function StatCard({ data }: any) {
+  if (!data) {
+    return (
+      <div className="space-y-2">
+        <div className="text-4xl font-bold text-foreground">0</div>
+        <div className="text-sm text-gray-500">No data</div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-2">
-      <div className="text-4xl font-bold text-foreground">{data.value}</div>
+      <div className="text-4xl font-bold text-foreground">
+        {data.value || 0}
+      </div>
       <div className="flex items-center space-x-2">
         <span
           className={`text-sm font-medium ${
             data.trend === "up" ? "text-green-600" : "text-red-600"
           }`}
         >
-          {data.change}
+          {data.change || "0%"}
         </span>
         <span className="text-sm text-gray-500">this week</span>
       </div>
@@ -115,12 +136,18 @@ function StatCard({ data }: any) {
 function NotesWidget({ data }: any) {
   return (
     <div className="bg-note-light rounded-lg p-4 h-32">
-      <p className="text-gray-700 text-sm">{data.content}</p>
+      <p className="text-gray-700 text-sm">
+        {data?.content || "Click to add notes..."}
+      </p>
     </div>
   );
 }
 
 function TasksWidget({ data }: any) {
+  if (!data || !data.tasks || data.tasks.length === 0) {
+    return <div className="text-gray-400 text-sm">No tasks yet</div>;
+  }
+
   return (
     <div className="space-y-2">
       {data.tasks.map((task: any) => (
@@ -130,7 +157,7 @@ function TasksWidget({ data }: any) {
         >
           <input
             type="checkbox"
-            checked={task.completed}
+            checked={task.completed || false}
             readOnly
             className="w-4 h-4 rounded border-gray-300 text-todo focus:ring-todo"
           />
@@ -148,6 +175,10 @@ function TasksWidget({ data }: any) {
 }
 
 function LinksWidget({ data }: any) {
+  if (!data || !data.links || data.links.length === 0) {
+    return <div className="text-gray-400 text-sm">No links saved</div>;
+  }
+
   return (
     <div className="space-y-2">
       {data.links.map((link: any) => (

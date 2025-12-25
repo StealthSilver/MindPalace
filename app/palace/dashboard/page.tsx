@@ -63,6 +63,39 @@ export default function DashboardPage() {
   };
 
   const addWidget = async (widgetType: any, label: string) => {
+    // Create widget with default data based on type
+    const getDefaultData = (type: string) => {
+      switch (type) {
+        case "chart-line":
+          return {
+            values: [30, 45, 35, 50, 40, 60, 55],
+            labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+          };
+        case "stat-card":
+          return {
+            value: "1,234",
+            change: "+12%",
+            trend: "up",
+          };
+        case "notes":
+          return {
+            content: "Click to add your notes here...",
+          };
+        case "tasks":
+          return {
+            tasks: [{ id: "1", text: "Example task", completed: false }],
+          };
+        case "links":
+          return {
+            links: [
+              { id: "1", title: "Example Link", url: "https://example.com" },
+            ],
+          };
+        default:
+          return {};
+      }
+    };
+
     const newWidget: Widget = {
       id: `widget-${Date.now()}`,
       type: widgetType,
@@ -71,6 +104,7 @@ export default function DashboardPage() {
       y: widgets.length,
       width: 1,
       height: 1,
+      data: getDefaultData(widgetType),
     };
     const updatedWidgets = [...widgets, newWidget];
     setWidgets(updatedWidgets);
