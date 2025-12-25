@@ -38,10 +38,10 @@ export default function AppShell({
         <TopBar mode={mode} onModeChange={onModeChange} />
         <main className="flex-1 overflow-hidden">{children}</main>
       </div>
-      
-      <CommandPalette 
-        isOpen={showCommandPalette} 
-        onClose={() => setShowCommandPalette(false)} 
+
+      <CommandPalette
+        isOpen={showCommandPalette}
+        onClose={() => setShowCommandPalette(false)}
       />
     </div>
   );
