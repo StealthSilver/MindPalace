@@ -38,6 +38,7 @@ async function connectDB() {
     cached.conn = await cached.promise;
   } catch (e) {
     cached.promise = null;
+    console.error("MongoDB connection error:", e);
     throw e;
   }
 

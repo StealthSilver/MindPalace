@@ -6,6 +6,23 @@ import User from "@/models/User";
 
 export async function POST(request: Request) {
   try {
+    // Check environment variables
+    if (!process.env.JWT_SECRET) {
+      console.error("JWT_SECRET is not defined");
+      return NextResponse.json(
+        { error: "Server configuration error" },
+        { status: 500 }
+      );
+    }
+
+    if (!process.env.MONGODB_URI) {
+      console.error("MONGODB_URI is not defined");
+      return NextResponse.json(
+        { error: "Database configuration error" },
+        { status: 500 }
+      );
+    }
+
     const { email, password } = await request.json();
 
     if (!email || !password) {
@@ -55,7 +72,11 @@ export async function POST(request: Request) {
   } catch (error: any) {
     console.error("Login error:", error);
     return NextResponse.json(
-      { error: "Something went wrong" },
+      {
+        error: "Something went wrong",
+        details:
+          process.env.NODE_ENV === "development" ? error.message : undefined,
+      },
       { status: 500 }
     );
   }
