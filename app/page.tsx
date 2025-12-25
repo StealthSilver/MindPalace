@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import Logo from "@/components/shared/Logo";
 
 export default function LandingPage() {
   const [mounted, setMounted] = useState(false);
@@ -16,10 +17,8 @@ export default function LandingPage() {
       <section className="relative overflow-hidden">
         {/* Navigation */}
         <nav className="max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-accent-light to-accent flex items-center justify-center">
-              <span className="text-white font-bold text-lg">M</span>
-            </div>
+          <div className="flex items-center space-x-3">
+            <Logo size="sm" />
             <span className="text-xl font-semibold text-foreground">
               Mind Palace
             </span>

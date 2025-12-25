@@ -9,6 +9,15 @@ export const metadata: Metadata = {
   title: "Mind Palace - Your thinking space, reimagined",
   description:
     "A calm, visual way to organize thoughts, ideas, and information.",
+  icons: {
+    icon: [
+      {
+        url: "/mplogo.svg",
+        type: "image/svg+xml",
+      },
+    ],
+    apple: "/mplogo.svg",
+  },
 };
 
 export default function RootLayout({

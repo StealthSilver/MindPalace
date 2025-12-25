@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import Logo from "@/components/shared/Logo";
 
 export default function SignupPage() {
   const { signup } = useAuth();
@@ -32,9 +33,7 @@ export default function SignupPage() {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-block">
-            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-accent-light to-accent flex items-center justify-center mx-auto mb-4">
-              <span className="text-white font-bold text-2xl">M</span>
-            </div>
+            <Logo size="md" className="mx-auto mb-4" />
           </Link>
           <h1 className="text-2xl font-bold text-foreground">
             Create your palace

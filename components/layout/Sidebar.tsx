@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Logo from "@/components/shared/Logo";
 import { AppMode } from "@/types";
 
 interface SidebarProps {
@@ -104,9 +105,7 @@ export default function Sidebar({ currentMode }: SidebarProps) {
     <aside className="w-16 bg-white border-r border-gray-200 flex flex-col items-center py-6 space-y-8">
       {/* Logo */}
       <Link href="/palace/dashboard" className="mb-4">
-        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-accent-light to-accent flex items-center justify-center">
-          <span className="text-white font-bold text-lg">M</span>
-        </div>
+        <Logo size="sm" />
       </Link>
 
       {/* Navigation */}
