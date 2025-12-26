@@ -22,7 +22,9 @@ if (!cached) {
 }
 
 async function connectDB() {
+  console.log("connectDB called");
   if (cached.conn) {
+    console.log("Using cached connection");
     return cached.conn;
   }
 
@@ -31,14 +33,20 @@ async function connectDB() {
       bufferCommands: false,
     };
 
+    console.log(
+      "Creating new connection promise to:",
+      MONGODB_URI.replace(/\/\/.*@/, "//***:***@")
+    );
     cached.promise = mongoose.connect(MONGODB_URI, opts);
   }
 
   try {
+    console.log("Awaiting connection...");
     cached.conn = await cached.promise;
+    console.log("Connection successful");
   } catch (e) {
-    cached.promise = null;
     console.error("MongoDB connection error:", e);
+    cached.promise = null;
     throw e;
   }
 

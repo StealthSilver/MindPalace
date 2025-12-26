@@ -10,6 +10,8 @@ export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   try {
+    console.log("Signup request received");
+
     // Check environment variables
     if (!process.env.JWT_SECRET) {
       console.error("JWT_SECRET is not defined");
@@ -27,7 +29,12 @@ export async function POST(request: Request) {
       );
     }
 
-    const { name, email, password } = await request.json();
+    console.log("Environment variables OK");
+
+    const body = await request.json();
+    console.log("Request body:", body);
+
+    const { name, email, password } = body;
 
     if (!name || !email || !password) {
       return NextResponse.json(
@@ -43,20 +50,26 @@ export async function POST(request: Request) {
       );
     }
 
+    console.log("Connecting to database...");
     await connectDB();
+    console.log("Database connected");
 
     // Check if user already exists
+    console.log("Checking for existing user:", email);
     const existingUser = await User.findOne({ email });
     if (existingUser) {
+      console.log("User already exists");
       return NextResponse.json(
         { error: "User already exists with this email" },
         { status: 400 }
       );
     }
 
+    console.log("Hashing password...");
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12);
 
+    console.log("Creating user...");
     // Create user
     const user = await User.create({
       name,
@@ -64,12 +77,16 @@ export async function POST(request: Request) {
       password: hashedPassword,
     });
 
+    console.log("User created:", user._id);
+
     // Create JWT token
     const token = jwt.sign(
       { userId: user._id, email: user.email },
       process.env.JWT_SECRET!,
       { expiresIn: "7d" }
     );
+
+    console.log("Token created");
 
     // Return user data and token
     return NextResponse.json({
