@@ -71,6 +71,65 @@ export default function CanvasPage() {
     }
   };
 
+  const handleZoomIn = () => {
+    // Access canvas state through ref and calculate new scale
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+
+    const newScale = Math.min(3, canvasState.scale * 1.2);
+    const scaleDelta = newScale - canvasState.scale;
+
+    const worldX = (centerX - canvasState.offsetX) / canvasState.scale;
+    const worldY = (centerY - canvasState.offsetY) / canvasState.scale;
+
+    // Trigger zoom by dispatching wheel event to avoid state management complexity
+    const wheelEvent = new WheelEvent("wheel", {
+      deltaY: -50,
+      clientX: centerX + rect.left,
+      clientY: centerY + rect.top,
+      bubbles: true,
+      cancelable: true,
+    });
+    canvas.dispatchEvent(wheelEvent);
+  };
+
+  const handleZoomOut = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+
+    // Trigger zoom by dispatching wheel event
+    const wheelEvent = new WheelEvent("wheel", {
+      deltaY: 50,
+      clientX: centerX + rect.left,
+      clientY: centerY + rect.top,
+      bubbles: true,
+      cancelable: true,
+    });
+    canvas.dispatchEvent(wheelEvent);
+  };
+
+  const handleZoomReset = () => {
+    // Reset to 100% zoom
+    if (canvasRef.current) {
+      const wheelEvent = new WheelEvent("wheel", {
+        deltaY: 100 * (1 - canvasState.scale),
+        clientX: window.innerWidth / 2,
+        clientY: window.innerHeight / 2,
+        bubbles: true,
+        cancelable: true,
+      });
+      canvasRef.current.dispatchEvent(wheelEvent);
+    }
+  };
+
   const handleCanvasDoubleClick = (e: React.MouseEvent) => {
     // Only open menu on double-click on empty canvas (left button)
     if (e.target === canvasRef.current && e.button === 0 && !isPanning) {
@@ -361,7 +420,11 @@ export default function CanvasPage() {
 
         {/* Zoom Controls */}
         <div className="absolute bottom-6 right-6 bg-white rounded-lg shadow-medium border border-gray-200 p-2 flex flex-col space-y-2">
-          <button className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded calm-transition text-gray-600">
+          <button
+            onClick={handleZoomIn}
+            className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded calm-transition text-gray-600"
+            title="Zoom in (⌘ +)"
+          >
             <svg
               className="w-5 h-5"
               fill="none"
@@ -376,10 +439,14 @@ export default function CanvasPage() {
               />
             </svg>
           </button>
-          <div className="text-xs text-center text-gray-500 py-1">
+          <div className="text-xs text-center text-gray-500 py-1 w-10">
             {Math.round(canvasState.scale * 100)}%
           </div>
-          <button className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded calm-transition text-gray-600">
+          <button
+            onClick={handleZoomOut}
+            className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded calm-transition text-gray-600"
+            title="Zoom out (⌘ -)"
+          >
             <svg
               className="w-5 h-5"
               fill="none"
@@ -393,6 +460,13 @@ export default function CanvasPage() {
                 d="M20 12H4"
               />
             </svg>
+          </button>
+          <button
+            onClick={handleZoomReset}
+            className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded calm-transition text-gray-600 text-xs font-semibold"
+            title="Reset zoom (⌘ 0)"
+          >
+            1x
           </button>
         </div>
       </div>
