@@ -40,7 +40,8 @@ export type WidgetType =
   | "links"
   | "messages"
   | "clock"
-  | "weather";
+  | "weather"
+  | "countdown";
 
 export interface Widget {
   id: string;

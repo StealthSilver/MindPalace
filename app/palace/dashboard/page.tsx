@@ -91,6 +91,14 @@ export default function DashboardPage() {
               { id: "1", title: "Example Link", url: "https://example.com" },
             ],
           };
+        case "countdown":
+          return {
+            timeInSeconds: null,
+          };
+        case "clock":
+          return {
+            timezone: "",
+          };
         default:
           return {};
       }
@@ -224,19 +232,20 @@ export default function DashboardPage() {
 
             <div className="grid grid-cols-3 gap-4">
               {[
+                { type: "clock", label: "Clock", color: "accent" },
+                { type: "countdown", label: "Countdown", color: "accent" },
+                { type: "links", label: "Links", color: "accent" },
                 { type: "chart-line", label: "Line Chart", color: "analytics" },
                 { type: "chart-bar", label: "Bar Chart", color: "analytics" },
                 { type: "stat-card", label: "Stat Card", color: "analytics" },
-                { type: "notes", label: "Notes", color: "note" },
-                { type: "tasks", label: "Tasks", color: "todo" },
-                { type: "links", label: "Links", color: "link" },
-                { type: "clock", label: "Clock", color: "image" },
-                { type: "weather", label: "Weather", color: "image" },
+                { type: "notes", label: "Notes", color: "accent" },
+                { type: "tasks", label: "Tasks", color: "accent" },
+                { type: "weather", label: "Weather", color: "accent" },
               ].map((widgetType) => (
                 <button
                   key={widgetType.type}
                   onClick={() => addWidget(widgetType.type, widgetType.label)}
-                  className={`p-6 rounded-xl border-2 border-gray-200 hover:border-${widgetType.color} hover:bg-${widgetType.color}-light calm-transition text-center`}
+                  className={`p-6 rounded-xl border-2 border-gray-200 hover:border-green-400 hover:bg-green-50 calm-transition text-center`}
                 >
                   <div className="text-sm font-medium text-gray-700">
                     {widgetType.label}

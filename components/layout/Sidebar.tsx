@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import Logo from "@/components/shared/Logo";
+import Logo from "../shared/Logo";
 import { AppMode } from "@/types";
 
 interface SidebarProps {
@@ -104,7 +104,7 @@ export default function Sidebar({ currentMode }: SidebarProps) {
   return (
     <aside className="w-16 bg-white border-r border-gray-200 flex flex-col items-center py-6 space-y-8">
       {/* Logo */}
-      <Link href="/palace/dashboard" className="mb-4">
+      <Link href="/palace/dashboard" className="-mt-2 mb-4">
         <Logo size="sm" />
       </Link>
 
@@ -128,11 +128,6 @@ export default function Sidebar({ currentMode }: SidebarProps) {
           </Link>
         ))}
       </nav>
-
-      {/* Profile */}
-      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-note to-note-dark flex items-center justify-center text-foreground font-medium text-sm">
-        U
-      </div>
     </aside>
   );
 }
