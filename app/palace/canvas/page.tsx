@@ -21,6 +21,11 @@ export default function CanvasPage() {
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [showNodeMenu, setShowNodeMenu] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
+  const [showLinkModal, setShowLinkModal] = useState(false);
+  const [linkName, setLinkName] = useState("");
+  const [linkUrl, setLinkUrl] = useState("");
+  const [showTweetModal, setShowTweetModal] = useState(false);
+  const [tweetUrl, setTweetUrl] = useState("");
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -58,7 +63,7 @@ export default function CanvasPage() {
     }
   };
 
-  const handleCanvasClick = (e: React.MouseEvent) => {
+  const handleCanvasDoubleClick = (e: React.MouseEvent) => {
     if (e.target === canvasRef.current && !isPanning) {
       const rect = canvasRef.current.getBoundingClientRect();
       const worldPos = screenToWorld(
@@ -124,6 +129,18 @@ export default function CanvasPage() {
   const createNode = async (type: NodeType) => {
     const rect = canvasRef.current?.getBoundingClientRect();
     if (rect) {
+      if (type === "link") {
+        setShowNodeMenu(false);
+        setShowLinkModal(true);
+        return;
+      }
+
+      if (type === "tweet") {
+        setShowNodeMenu(false);
+        setShowTweetModal(true);
+        return;
+      }
+
       const worldPos = screenToWorld(
         menuPosition.x - rect.left,
         menuPosition.y - rect.top
@@ -136,11 +153,74 @@ export default function CanvasPage() {
         width: 250,
         height: 180,
         content: "",
+        todos: type === "todo" ? [] : undefined,
       };
       const updatedNodes = [...nodes, newNode];
       setNodes(updatedNodes);
       await handleSaveNodes(updatedNodes);
       setShowNodeMenu(false);
+    }
+  };
+
+  const saveLinkNode = async () => {
+    if (!linkName || !linkUrl) {
+      alert("Please fill in both name and URL");
+      return;
+    }
+
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (rect) {
+      const worldPos = screenToWorld(
+        menuPosition.x - rect.left,
+        menuPosition.y - rect.top
+      );
+      const newNode: Node = {
+        id: `node-${Date.now()}`,
+        type: "link",
+        x: worldPos.x,
+        y: worldPos.y,
+        width: 250,
+        height: 180,
+        content: "",
+        linkName,
+        linkUrl,
+      };
+      const updatedNodes = [...nodes, newNode];
+      setNodes(updatedNodes);
+      await handleSaveNodes(updatedNodes);
+      setShowLinkModal(false);
+      setLinkName("");
+      setLinkUrl("");
+    }
+  };
+
+  const saveTweetNode = async () => {
+    if (!tweetUrl) {
+      alert("Please enter a tweet URL");
+      return;
+    }
+
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (rect) {
+      const worldPos = screenToWorld(
+        menuPosition.x - rect.left,
+        menuPosition.y - rect.top
+      );
+      const newNode: Node = {
+        id: `node-${Date.now()}`,
+        type: "tweet",
+        x: worldPos.x,
+        y: worldPos.y,
+        width: 350,
+        height: 400,
+        content: "",
+        tweetUrl,
+      };
+      const updatedNodes = [...nodes, newNode];
+      setNodes(updatedNodes);
+      await handleSaveNodes(updatedNodes);
+      setShowTweetModal(false);
+      setTweetUrl("");
     }
   };
 
@@ -176,7 +256,7 @@ export default function CanvasPage() {
       <div
         ref={canvasRef}
         className="relative w-full h-full bg-gray-50 overflow-hidden cursor-grab active:cursor-grabbing"
-        onClick={handleCanvasClick}
+        onDoubleClick={handleCanvasDoubleClick}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         style={{ cursor: isPanning ? "grabbing" : "grab" }}
@@ -296,6 +376,106 @@ export default function CanvasPage() {
                   {item.label}
                 </button>
               ))}
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Link Creation Modal */}
+      {showLinkModal && (
+        <>
+          <div
+            className="fixed inset-0 z-40 bg-black/50"
+            onClick={() => setShowLinkModal(false)}
+          />
+          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 bg-white rounded-xl shadow-lift border border-gray-200 p-6 w-96">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+              Add Link
+            </h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Link Name
+                </label>
+                <input
+                  type="text"
+                  value={linkName}
+                  onChange={(e) => setLinkName(e.target.value)}
+                  placeholder="e.g., My Blog"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+                  autoFocus
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  URL
+                </label>
+                <input
+                  type="text"
+                  value={linkUrl}
+                  onChange={(e) => setLinkUrl(e.target.value)}
+                  placeholder="e.g., https://example.com"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+                />
+              </div>
+              <div className="flex gap-2 justify-end pt-4">
+                <button
+                  onClick={() => setShowLinkModal(false)}
+                  className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={saveLinkNode}
+                  className="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-dark"
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Tweet Creation Modal */}
+      {showTweetModal && (
+        <>
+          <div
+            className="fixed inset-0 z-40 bg-black/50"
+            onClick={() => setShowTweetModal(false)}
+          />
+          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 bg-white rounded-xl shadow-lift border border-gray-200 p-6 w-96">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+              Add Tweet
+            </h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Tweet URL
+                </label>
+                <input
+                  type="text"
+                  value={tweetUrl}
+                  onChange={(e) => setTweetUrl(e.target.value)}
+                  placeholder="e.g., https://twitter.com/user/status/1234567890"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+                  autoFocus
+                />
+              </div>
+              <div className="flex gap-2 justify-end pt-4">
+                <button
+                  onClick={() => setShowTweetModal(false)}
+                  className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={saveTweetNode}
+                  className="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-dark"
+                >
+                  Save
+                </button>
+              </div>
             </div>
           </div>
         </>

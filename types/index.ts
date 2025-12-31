@@ -2,6 +2,12 @@
 
 export type NodeType = "note" | "link" | "image" | "todo" | "tweet";
 
+export interface TodoItem {
+  id: string;
+  text: string;
+  completed: boolean;
+}
+
 export interface Node {
   id: string;
   type: NodeType;
@@ -13,6 +19,10 @@ export interface Node {
   color?: string;
   topicId?: string;
   completed?: boolean;
+  linkName?: string;
+  linkUrl?: string;
+  todos?: TodoItem[];
+  tweetUrl?: string;
 }
 
 export interface Topic {
