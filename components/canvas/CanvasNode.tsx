@@ -209,8 +209,8 @@ export default function CanvasNode({
 
       {/* Node Content */}
       <div
-        className="px-4 py-3 overflow-y-auto flex flex-col"
-        style={{ maxHeight: "calc(100% - 50px)" }}
+        className="px-4 py-3 flex flex-col flex-1"
+        style={{ minHeight: "calc(100% - 50px)" }}
       >
         {node.type === "link" ? (
           isEditing ? (
@@ -225,8 +225,8 @@ export default function CanvasNode({
                   onChange={(e) => setLinkName(e.target.value)}
                   onMouseDown={(e) => e.stopPropagation()}
                   autoFocus
-                  className="w-full px-3 py-2 bg-white/60 border border-gray-300 rounded-lg text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent calm-transition"
-                  style={{ fontSize: `${14 / scale}px` }}
+                  className="w-full px-3 py-1.5 bg-white/60 border border-gray-300 rounded text-gray-800 text-xs focus:outline-none focus:ring-1 focus:ring-accent focus:border-transparent calm-transition"
+                  style={{ fontSize: `${12 / scale}px` }}
                 />
               </div>
               <div>
@@ -238,8 +238,8 @@ export default function CanvasNode({
                   value={linkUrl}
                   onChange={(e) => setLinkUrl(e.target.value)}
                   onMouseDown={(e) => e.stopPropagation()}
-                  className="w-full px-3 py-2 bg-white/60 border border-gray-300 rounded-lg text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent calm-transition"
-                  style={{ fontSize: `${14 / scale}px` }}
+                  className="w-full px-3 py-1.5 bg-white/60 border border-gray-300 rounded text-gray-800 text-xs focus:outline-none focus:ring-1 focus:ring-accent focus:border-transparent calm-transition"
+                  style={{ fontSize: `${12 / scale}px` }}
                 />
               </div>
               <button
@@ -247,7 +247,7 @@ export default function CanvasNode({
                   onUpdate(node.id, { linkName, linkUrl });
                   setIsEditing(false);
                 }}
-                className="w-full mt-3 px-3 py-1.5 bg-accent text-white rounded-lg text-xs font-medium hover:bg-accent-dark calm-transition shadow-soft"
+                className="w-full mt-2 px-3 py-1.5 bg-accent text-white rounded text-xs font-medium hover:bg-accent-dark calm-transition"
               >
                 Done
               </button>
@@ -386,8 +386,8 @@ export default function CanvasNode({
           </div>
         ) : node.type === "tweet" ? (
           isEditing ? (
-            <div className="space-y-3">
-              <label className="block text-xs font-semibold text-gray-600 mb-1">
+            <div className="space-y-2">
+              <label className="block text-xs font-semibold text-gray-600 mb-0.5">
                 Tweet URL
               </label>
               <input
@@ -397,15 +397,15 @@ export default function CanvasNode({
                 onMouseDown={(e) => e.stopPropagation()}
                 autoFocus
                 placeholder="https://twitter.com/user/status/..."
-                className="w-full px-3 py-2 bg-white/60 border border-gray-300 rounded-lg text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent calm-transition"
-                style={{ fontSize: `${12 / scale}px` }}
+                className="w-full px-2 py-1 bg-white/60 border border-gray-300 rounded text-gray-800 text-xs focus:outline-none focus:ring-1 focus:ring-accent focus:border-transparent calm-transition"
+                style={{ fontSize: `${11 / scale}px` }}
               />
               <button
                 onClick={() => {
                   onUpdate(node.id, { tweetUrl });
                   setIsEditing(false);
                 }}
-                className="w-full mt-3 px-3 py-1.5 bg-accent text-white rounded-lg text-xs font-medium hover:bg-accent-dark calm-transition shadow-soft"
+                className="w-full mt-1 px-2 py-1 bg-accent text-white rounded text-xs font-medium hover:bg-accent-dark calm-transition"
               >
                 Done
               </button>
@@ -437,9 +437,9 @@ export default function CanvasNode({
           )
         ) : node.type === "image" ? (
           isEditing ? (
-            <div className="space-y-3 flex flex-col">
+            <div className="space-y-2 flex flex-col">
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-2">
+                <label className="block text-xs font-semibold text-gray-600 mb-0.5">
                   Image URL
                 </label>
                 <input
@@ -449,12 +449,12 @@ export default function CanvasNode({
                   onMouseDown={(e) => e.stopPropagation()}
                   autoFocus
                   placeholder="https://example.com/image.jpg"
-                  className="w-full px-3 py-2 bg-white/60 border border-gray-300 rounded-lg text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent calm-transition"
-                  style={{ fontSize: `${12 / scale}px` }}
+                  className="w-full px-2 py-1 bg-white/60 border border-gray-300 rounded text-gray-800 text-xs focus:outline-none focus:ring-1 focus:ring-accent focus:border-transparent calm-transition"
+                  style={{ fontSize: `${11 / scale}px` }}
                 />
               </div>
-              <div className="text-xs text-gray-500 text-center">
-                or upload a file
+              <div className="text-xs text-gray-500 text-center flex-shrink-0">
+                or upload
               </div>
               <input
                 type="file"
@@ -470,7 +470,7 @@ export default function CanvasNode({
                     reader.readAsDataURL(file);
                   }
                 }}
-                className="text-xs file:px-3 file:py-1.5 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-accent file:text-white hover:file:bg-accent-dark file:cursor-pointer"
+                className="text-xs file:px-2 file:py-1 file:rounded file:border-0 file:text-xs file:font-medium file:bg-accent file:text-white hover:file:bg-accent-dark file:cursor-pointer"
                 onClick={(e) => e.stopPropagation()}
                 onMouseDown={(e) => e.stopPropagation()}
               />
@@ -479,19 +479,19 @@ export default function CanvasNode({
                   onUpdate(node.id, { imageUrl });
                   setIsEditing(false);
                 }}
-                className="w-full mt-3 px-3 py-1.5 bg-accent text-white rounded-lg text-xs font-medium hover:bg-accent-dark calm-transition shadow-soft disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full mt-1 px-2 py-1 bg-accent text-white rounded text-xs font-medium hover:bg-accent-dark calm-transition disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
                 disabled={!imageUrl}
               >
                 Done
               </button>
             </div>
           ) : (
-            <div className="h-full w-full flex flex-col items-center justify-center bg-gradient-to-br from-white/30 to-white/10 rounded-lg overflow-hidden">
+            <div className="h-full w-full flex flex-col items-center justify-center bg-gradient-to-br from-white/30 to-white/10 rounded-lg overflow-hidden flex-1">
               {imageUrl ? (
                 <img
                   src={imageUrl}
                   alt="Canvas image"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                   onError={(e) => {
                     console.error("Image failed to load");
                   }}

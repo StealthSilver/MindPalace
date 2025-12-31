@@ -231,7 +231,7 @@ export default function CanvasPage() {
         x: worldPos.x,
         y: worldPos.y,
         width: 250,
-        height: 180,
+        height: 240,
         content: "",
         todos: type === "todo" ? [] : undefined,
       };
@@ -259,8 +259,8 @@ export default function CanvasPage() {
         type: "link",
         x: worldPos.x,
         y: worldPos.y,
-        width: 250,
-        height: 180,
+        width: 280,
+        height: 300,
         content: "",
         linkName,
         linkUrl,
@@ -534,13 +534,13 @@ export default function CanvasPage() {
             className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm"
             onClick={() => setShowLinkModal(false)}
           />
-          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 bg-white rounded-2xl shadow-lift border border-gray-200 p-8 w-96 animate-scale-in">
-            <h2 className="text-2xl font-bold text-foreground mb-6">
+          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 bg-white rounded-2xl shadow-lift border border-gray-200 p-6 w-96 animate-scale-in flex flex-col max-h-[90vh]">
+            <h2 className="text-lg font-bold text-foreground mb-4 flex-shrink-0">
               Add Link
             </h2>
-            <div className="space-y-4">
+            <div className="space-y-3 flex-1 overflow-y-auto">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-xs font-semibold text-gray-700 mb-1">
                   Link Name
                 </label>
                 <input
@@ -548,12 +548,12 @@ export default function CanvasPage() {
                   value={linkName}
                   onChange={(e) => setLinkName(e.target.value)}
                   placeholder="e.g., My Blog"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent calm-transition"
+                  className="w-full px-2 py-1 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent calm-transition"
                   autoFocus
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-xs font-semibold text-gray-700 mb-1">
                   URL
                 </label>
                 <input
@@ -561,23 +561,23 @@ export default function CanvasPage() {
                   value={linkUrl}
                   onChange={(e) => setLinkUrl(e.target.value)}
                   placeholder="e.g., https://example.com"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent calm-transition"
+                  className="w-full px-2 py-1 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent calm-transition"
                 />
               </div>
-              <div className="flex gap-3 justify-end pt-6">
-                <button
-                  onClick={() => setShowLinkModal(false)}
-                  className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 calm-transition font-medium"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={saveLinkNode}
-                  className="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-dark calm-transition font-medium shadow-soft"
-                >
-                  Save
-                </button>
-              </div>
+            </div>
+            <div className="flex gap-2 justify-end pt-4 mt-2 flex-shrink-0 border-t border-gray-200">
+              <button
+                onClick={() => setShowLinkModal(false)}
+                className="px-2 py-1 text-xs text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 calm-transition font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={saveLinkNode}
+                className="px-2 py-1 text-xs bg-accent text-white rounded-lg hover:bg-accent-dark calm-transition font-medium shadow-soft"
+              >
+                Save
+              </button>
             </div>
           </div>
         </>
@@ -634,11 +634,11 @@ export default function CanvasPage() {
             className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm"
             onClick={() => setShowImageModal(false)}
           />
-          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 bg-white rounded-2xl shadow-lift border border-gray-200 p-8 w-96 max-h-[90vh] overflow-y-auto animate-scale-in">
-            <h2 className="text-2xl font-bold text-foreground mb-6">
+          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 bg-white rounded-2xl shadow-lift border border-gray-200 p-8 w-96 max-h-[90vh] animate-scale-in flex flex-col">
+            <h2 className="text-2xl font-bold text-foreground mb-6 flex-shrink-0">
               Add Image
             </h2>
-            <div className="space-y-4">
+            <div className="space-y-4 flex-1 overflow-y-auto">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Image URL
@@ -685,38 +685,40 @@ export default function CanvasPage() {
                 </p>
               </div>
               {imageUrl && (
-                <div className="mt-4">
-                  <p className="text-sm font-semibold text-gray-700 mb-2">
-                    Preview:
+                <div className="mt-2 flex-shrink-0">
+                  <p className="text-xs font-semibold text-gray-700 mb-1.5">
+                    Preview (as it will appear in card):
                   </p>
-                  <img
-                    src={imageUrl}
-                    alt="Preview"
-                    className="w-full max-h-40 object-cover rounded-lg border border-gray-200"
-                    onError={() => {
-                      alert("Failed to load image");
-                    }}
-                  />
+                  <div className="w-32 h-32 mx-auto bg-gradient-to-br from-white/30 to-white/10 rounded-lg border border-gray-200 flex items-center justify-center overflow-hidden">
+                    <img
+                      src={imageUrl}
+                      alt="Preview"
+                      className="w-full h-full object-contain"
+                      onError={() => {
+                        alert("Failed to load image");
+                      }}
+                    />
+                  </div>
                 </div>
               )}
-              <div className="flex gap-3 justify-end pt-6">
-                <button
-                  onClick={() => {
-                    setShowImageModal(false);
-                    setImageUrl("");
-                  }}
-                  className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 calm-transition font-medium"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={saveImageNode}
-                  className="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-dark calm-transition font-medium shadow-soft disabled:opacity-50 disabled:cursor-not-allowed"
-                  disabled={!imageUrl}
-                >
-                  Save
-                </button>
-              </div>
+            </div>
+            <div className="flex gap-3 justify-end pt-4 mt-2 flex-shrink-0 border-t border-gray-200">
+              <button
+                onClick={() => {
+                  setShowImageModal(false);
+                  setImageUrl("");
+                }}
+                className="px-4 py-2 text-xs text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 calm-transition font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={saveImageNode}
+                className="px-4 py-2 text-xs bg-accent text-white rounded-lg hover:bg-accent-dark calm-transition font-medium shadow-soft disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={!imageUrl}
+              >
+                Save
+              </button>
             </div>
           </div>
         </>
