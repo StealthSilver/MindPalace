@@ -23,6 +23,7 @@ export interface Node {
   linkUrl?: string;
   todos?: TodoItem[];
   tweetUrl?: string;
+  imageUrl?: string;
 }
 
 export interface Topic {

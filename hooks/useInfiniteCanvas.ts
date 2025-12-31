@@ -14,6 +14,7 @@ interface UseInfiniteCanvasReturn {
   isPanning: boolean;
   worldToScreen: (x: number, y: number) => { x: number; y: number };
   screenToWorld: (x: number, y: number) => { x: number; y: number };
+  setIsPanningDisabled: (disabled: boolean) => void;
 }
 
 export function useInfiniteCanvas(): UseInfiniteCanvasReturn {
@@ -24,6 +25,7 @@ export function useInfiniteCanvas(): UseInfiniteCanvasReturn {
     offsetY: 0,
   });
   const [isPanning, setIsPanning] = useState(false);
+  const [isPanningDisabled, setIsPanningDisabled] = useState(false);
   const lastMousePos = useRef({ x: 0, y: 0 });
 
   // Convert world coordinates to screen coordinates
@@ -44,13 +46,17 @@ export function useInfiniteCanvas(): UseInfiniteCanvasReturn {
     [canvasState]
   );
 
-  // Handle mouse down for panning
-  const handleMouseDown = useCallback((e: MouseEvent) => {
-    if (e.button === 0 && !e.shiftKey) {
-      setIsPanning(true);
-      lastMousePos.current = { x: e.clientX, y: e.clientY };
-    }
-  }, []);
+  // Handle mouse down for panning (right-click only)
+  const handleMouseDown = useCallback(
+    (e: MouseEvent) => {
+      if (e.button === 2 && !isPanningDisabled) {
+        e.preventDefault();
+        setIsPanning(true);
+        lastMousePos.current = { x: e.clientX, y: e.clientY };
+      }
+    },
+    [isPanningDisabled]
+  );
 
   // Handle mouse move for panning
   const handleMouseMove = useCallback(
@@ -130,5 +136,6 @@ export function useInfiniteCanvas(): UseInfiniteCanvasReturn {
     isPanning,
     worldToScreen,
     screenToWorld,
+    setIsPanningDisabled,
   };
 }

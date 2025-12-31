@@ -33,6 +33,7 @@ export default function CanvasNode({
   const [editingTodoText, setEditingTodoText] = useState("");
   const [tweetUrl, setTweetUrl] = useState(node.tweetUrl || "");
   const [isLoadingTweet, setIsLoadingTweet] = useState(false);
+  const [imageUrl, setImageUrl] = useState(node.imageUrl || "");
 
   const getNodeColor = () => {
     switch (node.type) {
@@ -118,6 +119,8 @@ export default function CanvasNode({
       onUpdate(node.id, { todos });
     } else if (node.type === "tweet") {
       onUpdate(node.id, { tweetUrl });
+    } else if (node.type === "image") {
+      onUpdate(node.id, { imageUrl });
     } else if (content !== node.content) {
       onUpdate(node.id, { content });
     }
@@ -408,6 +411,64 @@ export default function CanvasNode({
               ) : (
                 <div className="text-gray-500 text-sm text-center h-full flex items-center justify-center">
                   Double-click to add tweet URL
+                </div>
+              )}
+            </div>
+          )
+        ) : node.type === "image" ? (
+          isEditing ? (
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-2">
+                  Image URL
+                </label>
+                <input
+                  type="text"
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  onBlur={handleBlur}
+                  autoFocus
+                  placeholder="https://example.com/image.jpg"
+                  className="w-full px-2 py-1 bg-transparent border border-gray-300 rounded text-gray-800 text-sm"
+                  style={{ fontSize: `${12 / scale}px` }}
+                />
+              </div>
+              <div className="text-xs text-gray-500">
+                or use the file input below
+              </div>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                      const result = event.target?.result as string;
+                      setImageUrl(result);
+                    };
+                    reader.readAsDataURL(file);
+                  }
+                }}
+                className="w-full text-xs"
+                onClick={(e) => e.stopPropagation()}
+                onMouseDown={(e) => e.stopPropagation()}
+              />
+            </div>
+          ) : (
+            <div className="space-y-2 h-full flex flex-col items-center justify-center">
+              {imageUrl ? (
+                <img
+                  src={imageUrl}
+                  alt="Canvas image"
+                  className="max-w-full max-h-full object-contain rounded"
+                  onError={(e) => {
+                    console.error("Image failed to load");
+                  }}
+                />
+              ) : (
+                <div className="text-gray-500 text-sm text-center">
+                  Double-click to add image
                 </div>
               )}
             </div>

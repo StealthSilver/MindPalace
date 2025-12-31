@@ -12,8 +12,13 @@ import { useAuth } from "@/contexts/AuthContext";
 export default function CanvasPage() {
   const router = useRouter();
   const { user, isLoading: authLoading } = useAuth();
-  const { canvasRef, canvasState, isPanning, screenToWorld } =
-    useInfiniteCanvas();
+  const {
+    canvasRef,
+    canvasState,
+    isPanning,
+    screenToWorld,
+    setIsPanningDisabled,
+  } = useInfiniteCanvas();
   const [nodes, setNodes] = useState<Node[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -26,6 +31,8 @@ export default function CanvasPage() {
   const [linkUrl, setLinkUrl] = useState("");
   const [showTweetModal, setShowTweetModal] = useState(false);
   const [tweetUrl, setTweetUrl] = useState("");
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [imageUrl, setImageUrl] = useState("");
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -78,6 +85,7 @@ export default function CanvasPage() {
   const handleNodeDragStart = useCallback(
     (e: React.MouseEvent, node: Node) => {
       e.stopPropagation();
+      setIsPanningDisabled(true);
       const rect = canvasRef.current?.getBoundingClientRect();
       if (rect) {
         const worldPos = screenToWorld(
@@ -91,7 +99,7 @@ export default function CanvasPage() {
         });
       }
     },
-    [canvasRef, screenToWorld]
+    [canvasRef, screenToWorld, setIsPanningDisabled]
   );
 
   const handleMouseMove = useCallback(
@@ -124,7 +132,8 @@ export default function CanvasPage() {
       await handleSaveNodes(nodes);
     }
     setDraggingNode(null);
-  }, [draggingNode, nodes]);
+    setIsPanningDisabled(false);
+  }, [draggingNode, nodes, setIsPanningDisabled]);
 
   const createNode = async (type: NodeType) => {
     const rect = canvasRef.current?.getBoundingClientRect();
@@ -138,6 +147,12 @@ export default function CanvasPage() {
       if (type === "tweet") {
         setShowNodeMenu(false);
         setShowTweetModal(true);
+        return;
+      }
+
+      if (type === "image") {
+        setShowNodeMenu(false);
+        setShowImageModal(true);
         return;
       }
 
@@ -221,6 +236,36 @@ export default function CanvasPage() {
       await handleSaveNodes(updatedNodes);
       setShowTweetModal(false);
       setTweetUrl("");
+    }
+  };
+
+  const saveImageNode = async () => {
+    if (!imageUrl) {
+      alert("Please add an image URL or upload an image");
+      return;
+    }
+
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (rect) {
+      const worldPos = screenToWorld(
+        menuPosition.x - rect.left,
+        menuPosition.y - rect.top
+      );
+      const newNode: Node = {
+        id: `node-${Date.now()}`,
+        type: "image",
+        x: worldPos.x,
+        y: worldPos.y,
+        width: 300,
+        height: 300,
+        content: "",
+        imageUrl,
+      };
+      const updatedNodes = [...nodes, newNode];
+      setNodes(updatedNodes);
+      await handleSaveNodes(updatedNodes);
+      setShowImageModal(false);
+      setImageUrl("");
     }
   };
 
@@ -472,6 +517,101 @@ export default function CanvasPage() {
                 <button
                   onClick={saveTweetNode}
                   className="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-dark"
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Image Creation Modal */}
+      {showImageModal && (
+        <>
+          <div
+            className="fixed inset-0 z-40 bg-black/50"
+            onClick={() => setShowImageModal(false)}
+          />
+          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 bg-white rounded-xl shadow-lift border border-gray-200 p-6 w-96 max-h-96 overflow-y-auto">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+              Add Image
+            </h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Image URL
+                </label>
+                <input
+                  type="text"
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  placeholder="e.g., https://example.com/image.jpg"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+                  autoFocus
+                />
+              </div>
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white text-gray-500">or</span>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Upload Image
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = (event) => {
+                        const result = event.target?.result as string;
+                        setImageUrl(result);
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent cursor-pointer"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Supported formats: JPG, PNG, GIF, WebP
+                </p>
+              </div>
+              {imageUrl && (
+                <div className="mt-4">
+                  <p className="text-sm font-medium text-gray-700 mb-2">
+                    Preview:
+                  </p>
+                  <img
+                    src={imageUrl}
+                    alt="Preview"
+                    className="w-full max-h-40 object-cover rounded-lg"
+                    onError={() => {
+                      alert("Failed to load image");
+                    }}
+                  />
+                </div>
+              )}
+              <div className="flex gap-2 justify-end pt-4">
+                <button
+                  onClick={() => {
+                    setShowImageModal(false);
+                    setImageUrl("");
+                  }}
+                  className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={saveImageNode}
+                  className="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-dark disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={!imageUrl}
                 >
                   Save
                 </button>
