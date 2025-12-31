@@ -27,30 +27,30 @@ const config: Config = {
           900: "#111827",
         },
 
-        // Soft accent colors for node types
+        // Soft accent colors for node types - updated color palette
         note: {
-          light: "#FFF4E6",
-          DEFAULT: "#FFE4B5",
+          light: "#FBE4BB",
+          DEFAULT: "#FBE4BB",
           dark: "#F5D9A0",
         },
         link: {
-          light: "#E8F4FB",
-          DEFAULT: "#A8D8F0",
+          light: "#B2D7EC",
+          DEFAULT: "#B2D7EC",
           dark: "#7EC8E3",
         },
         image: {
-          light: "#F3EFF8",
-          DEFAULT: "#D4C5E8",
+          light: "#D2C4E4",
+          DEFAULT: "#D2C4E4",
           dark: "#BBA5D8",
         },
         todo: {
-          light: "#E8F5E9",
-          DEFAULT: "#B8E6B8",
+          light: "#BFE3BC",
+          DEFAULT: "#BFE3BC",
           dark: "#A0D9A0",
         },
         analytics: {
-          light: "#E6F3F5",
-          DEFAULT: "#B0DADC",
+          light: "#B2D7EC",
+          DEFAULT: "#B2D7EC",
           dark: "#8FC9CC",
         },
 
@@ -62,7 +62,7 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
+        sans: ["DM Sans", "system-ui", "sans-serif"],
       },
       animation: {
         "fade-in": "fadeIn 0.3s ease-in-out",

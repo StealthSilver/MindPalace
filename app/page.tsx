@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import Logo from "@/components/shared/Logo";
+import Image from "next/image";
 
 export default function LandingPage() {
   const [mounted, setMounted] = useState(false);
@@ -18,10 +18,12 @@ export default function LandingPage() {
         {/* Navigation */}
         <nav className="max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <Logo size="sm" />
-            <span className="text-xl font-semibold text-foreground">
-              Mind Palace
-            </span>
+            <Image
+              src="/logo.svg"
+              alt="Mind Palace Logo"
+              width={180}
+              height={40}
+            />
           </div>
           <div className="flex items-center space-x-4">
             <Link
@@ -357,7 +359,7 @@ export default function LandingPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2 text-gray-600">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent-light to-accent flex items-center justify-center">
-                <span className="text-white font-bold text-sm">M</span>
+                <span className="text-white font-bold text-sm">C</span>
               </div>
               <span className="text-sm">Part of Cluster</span>
             </div>
