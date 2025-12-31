@@ -359,7 +359,6 @@ export default function CanvasNode({
                   }}
                   onMouseDown={(e) => e.stopPropagation()}
                   onClick={(e) => e.stopPropagation()}
-                  onMouseDown={(e) => e.stopPropagation()}
                   placeholder="Add a todo..."
                   className="flex-1 px-2 py-1 bg-transparent border border-gray-300 rounded text-gray-800 text-sm"
                   style={{ fontSize: `${12 / scale}px` }}
