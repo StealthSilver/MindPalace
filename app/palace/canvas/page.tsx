@@ -26,6 +26,7 @@ export default function CanvasPage() {
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [showNodeMenu, setShowNodeMenu] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
+  const pendingUpdatesRef = useRef<Node[]>([]);
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [linkName, setLinkName] = useState("");
   const [linkUrl, setLinkUrl] = useState("");
@@ -71,7 +72,8 @@ export default function CanvasPage() {
   };
 
   const handleCanvasDoubleClick = (e: React.MouseEvent) => {
-    if (e.target === canvasRef.current && !isPanning) {
+    // Only open menu on double-click on empty canvas (left button)
+    if (e.target === canvasRef.current && e.button === 0 && !isPanning) {
       const rect = canvasRef.current.getBoundingClientRect();
       const worldPos = screenToWorld(
         e.clientX - rect.left,
@@ -84,6 +86,9 @@ export default function CanvasPage() {
 
   const handleNodeDragStart = useCallback(
     (e: React.MouseEvent, node: Node) => {
+      // Only allow left-click to drag
+      if (e.button !== 0) return;
+
       e.stopPropagation();
       setIsPanningDisabled(true);
       const rect = canvasRef.current?.getBoundingClientRect();
@@ -97,34 +102,34 @@ export default function CanvasPage() {
           x: worldPos.x - node.x,
           y: worldPos.y - node.y,
         });
+        pendingUpdatesRef.current = nodes;
       }
     },
-    [canvasRef, screenToWorld, setIsPanningDisabled]
+    [canvasRef, screenToWorld, setIsPanningDisabled, nodes]
   );
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent) => {
-      if (draggingNode) {
-        const rect = canvasRef.current?.getBoundingClientRect();
-        if (rect) {
-          const worldPos = screenToWorld(
-            e.clientX - rect.left,
-            e.clientY - rect.top
-          );
-          const updatedNodes = nodes.map((n) =>
-            n.id === draggingNode.id
-              ? {
-                  ...n,
-                  x: worldPos.x - dragOffset.x,
-                  y: worldPos.y - dragOffset.y,
-                }
-              : n
-          );
-          setNodes(updatedNodes);
-        }
+      if (draggingNode && canvasRef.current) {
+        const rect = canvasRef.current.getBoundingClientRect();
+        const worldPos = screenToWorld(
+          e.clientX - rect.left,
+          e.clientY - rect.top
+        );
+        const updatedNodes = pendingUpdatesRef.current.map((n) =>
+          n.id === draggingNode.id
+            ? {
+                ...n,
+                x: worldPos.x - dragOffset.x,
+                y: worldPos.y - dragOffset.y,
+              }
+            : n
+        );
+        pendingUpdatesRef.current = updatedNodes;
+        setNodes(updatedNodes);
       }
     },
-    [draggingNode, dragOffset, canvasRef, screenToWorld, nodes]
+    [draggingNode, dragOffset, screenToWorld]
   );
 
   const handleMouseUp = useCallback(async () => {
@@ -300,11 +305,12 @@ export default function CanvasPage() {
     <AppShell mode="canvas" onModeChange={handleModeChange}>
       <div
         ref={canvasRef}
-        className="relative w-full h-full bg-gray-50 overflow-hidden cursor-grab active:cursor-grabbing"
+        className="relative w-full h-full bg-gray-50 overflow-hidden"
         onDoubleClick={handleCanvasDoubleClick}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
-        style={{ cursor: isPanning ? "grabbing" : "grab" }}
+        style={{ cursor: isPanning ? "grabbing" : "default" }}
+        onContextMenu={(e) => e.preventDefault()}
       >
         {/* Grid Pattern */}
         <div
