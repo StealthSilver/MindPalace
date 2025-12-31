@@ -160,7 +160,7 @@ export default function CanvasNode({
 
   return (
     <div
-      className={`absolute ${getNodeColor()} rounded-2xl shadow-lift border border-white/50 hover:shadow-lg hover:border-accent/40 calm-transition cursor-move group backdrop-blur-sm`}
+      className={`absolute ${getNodeColor()} rounded-2xl shadow-lift border border-white/50 hover:shadow-lg hover:border-accent/40 calm-transition cursor-move group backdrop-blur-sm overflow-hidden`}
       style={{
         left: node.x,
         top: node.y,
