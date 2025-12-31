@@ -57,6 +57,14 @@ export default function DashboardPage() {
     await handleSaveWidgets(updatedWidgets);
   };
 
+  const handleUpdateWidget = async (widgetId: string, updatedData: any) => {
+    const updatedWidgets = widgets.map((w) =>
+      w.id === widgetId ? { ...w, data: { ...w.data, ...updatedData } } : w
+    );
+    setWidgets(updatedWidgets);
+    await handleSaveWidgets(updatedWidgets);
+  };
+
   const handleDragStart = (e: React.DragEvent, widget: Widget) => {
     e.dataTransfer.effectAllowed = "move";
     e.dataTransfer.setData("text/html", widget.id);
@@ -167,6 +175,7 @@ export default function DashboardPage() {
                 widget={widget}
                 onDragStart={handleDragStart}
                 onRemove={handleRemoveWidget}
+                onUpdate={handleUpdateWidget}
               />
             ))}
           </div>
@@ -240,9 +249,9 @@ export default function DashboardPage() {
                 { type: "countdown", label: "Countdown", color: "accent" },
                 { type: "links", label: "Links", color: "accent" },
                 { type: "weather", label: "Weather", color: "accent" },
-                { type: "chart-line", label: "Line Chart", color: "analytics" },
                 { type: "notes", label: "Notes", color: "accent" },
                 { type: "tasks", label: "Tasks", color: "accent" },
+                { type: "chart-line", label: "Line Chart", color: "analytics" },
                 { type: "chart-bar", label: "Bar Chart", color: "analytics" },
                 { type: "stat-card", label: "Stat Card", color: "analytics" },
               ].map((widgetType) => (

@@ -7,31 +7,76 @@ interface WidgetCardProps {
   widget: Widget;
   onDragStart?: (e: React.DragEvent, widget: Widget) => void;
   onRemove?: (id: string) => void;
+  onUpdate?: (widgetId: string, updatedData: any) => void;
 }
 
 export default function WidgetCard({
   widget,
   onDragStart,
   onRemove,
+  onUpdate,
 }: WidgetCardProps) {
   const renderContent = () => {
     switch (widget.type) {
       case "chart-line":
-        return <LineChart data={widget.data} />;
+        return (
+          <LineChart
+            data={widget.data}
+            onUpdate={(data: any) => onUpdate?.(widget.id, data)}
+          />
+        );
       case "stat-card":
         return <StatCard data={widget.data} />;
       case "notes":
-        return <NotesWidget data={widget.data} />;
+        return (
+          <NotesWidget
+            data={widget.data}
+            onUpdate={(data: any) => onUpdate?.(widget.id, data)}
+          />
+        );
       case "tasks":
-        return <TasksWidget data={widget.data} />;
+        return (
+          <TasksWidget
+            data={widget.data}
+            onUpdate={(data: any) => onUpdate?.(widget.id, data)}
+          />
+        );
       case "links":
-        return <LinksWidget data={widget.data} />;
+        return (
+          <LinksWidget
+            data={widget.data}
+            onUpdate={(data: any) => onUpdate?.(widget.id, data)}
+          />
+        );
       case "clock":
-        return <ClockWidget data={widget.data} />;
+        return (
+          <ClockWidget
+            data={widget.data}
+            onUpdate={(data: any) => onUpdate?.(widget.id, data)}
+          />
+        );
       case "countdown":
-        return <CountdownWidget data={widget.data} />;
+        return (
+          <CountdownWidget
+            data={widget.data}
+            onUpdate={(data: any) => onUpdate?.(widget.id, data)}
+          />
+        );
       case "weather":
-        return <WeatherWidget data={widget.data} />;
+        return (
+          <WeatherWidget
+            data={widget.data}
+            onUpdate={(data: any) => onUpdate?.(widget.id, data)}
+          />
+        );
+      case "chart-bar":
+        return (
+          <BarChart
+            data={widget.data}
+            onUpdate={(data: any) => onUpdate?.(widget.id, data)}
+          />
+        );
+
       default:
         return (
           <div className="text-gray-400 text-sm">
@@ -81,30 +126,479 @@ export default function WidgetCard({
 }
 
 // Widget Components
-function LineChart({ data }: any) {
-  if (!data || !data.values || data.values.length === 0) {
+function LineChart({ data, onUpdate }: any) {
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [editMode, setEditMode] = React.useState<"manual" | "csv">("manual");
+  const [manualLabel, setManualLabel] = React.useState("");
+  const [manualValue, setManualValue] = React.useState("");
+  const [csvInput, setCsvInput] = React.useState("");
+  const [error, setError] = React.useState("");
+
+  const chartData = data?.values ? data : { values: [], labels: [] };
+  const values = Array.isArray(chartData.values) ? chartData.values : [];
+  const labels = Array.isArray(chartData.labels) ? chartData.labels : [];
+
+  const handleAddDataPoint = () => {
+    if (!manualLabel.trim() || !manualValue.trim()) {
+      setError("Please enter both label and value");
+      return;
+    }
+
+    const numValue = parseFloat(manualValue);
+    if (isNaN(numValue)) {
+      setError("Value must be a number");
+      return;
+    }
+
+    const newValues = [...values, numValue];
+    const newLabels = [...labels, manualLabel];
+
+    onUpdate?.({ values: newValues, labels: newLabels });
+    setManualLabel("");
+    setManualValue("");
+    setError("");
+  };
+
+  const handleCSVImport = () => {
+    if (!csvInput.trim()) {
+      setError("Please enter CSV data");
+      return;
+    }
+
+    try {
+      const lines = csvInput.trim().split("\n");
+      const newLabels: string[] = [];
+      const newValues: number[] = [];
+
+      for (const line of lines) {
+        const parts = line.split(",").map((p) => p.trim());
+        if (parts.length >= 2) {
+          const label = parts[0];
+          const value = parseFloat(parts[1]);
+
+          if (!isNaN(value)) {
+            newLabels.push(label);
+            newValues.push(value);
+          }
+        }
+      }
+
+      if (newValues.length === 0) {
+        setError("No valid data found in CSV");
+        return;
+      }
+
+      onUpdate?.({ values: newValues, labels: newLabels });
+      setCsvInput("");
+      setError("");
+      setIsEditing(false);
+    } catch (err) {
+      setError("Error parsing CSV data");
+    }
+  };
+
+  const handleRemoveDataPoint = (index: number) => {
+    const newValues = values.filter((_: any, i: number) => i !== index);
+    const newLabels = labels.filter((_: any, i: number) => i !== index);
+    onUpdate?.({ values: newValues, labels: newLabels });
+  };
+
+  const handleClearData = () => {
+    onUpdate?.({ values: [], labels: [] });
+  };
+
+  if (isEditing) {
     return (
-      <div className="h-32 flex items-center justify-center text-gray-400 text-sm">
-        No data available
+      <div className="flex flex-col space-y-3 h-32">
+        <div className="flex gap-2 mb-2">
+          <button
+            onClick={() => setEditMode("manual")}
+            className={`px-3 py-1 text-xs rounded-lg ${
+              editMode === "manual"
+                ? "bg-accent text-white"
+                : "bg-gray-200 text-gray-700"
+            }`}
+          >
+            Manual
+          </button>
+          <button
+            onClick={() => setEditMode("csv")}
+            className={`px-3 py-1 text-xs rounded-lg ${
+              editMode === "csv"
+                ? "bg-accent text-white"
+                : "bg-gray-200 text-gray-700"
+            }`}
+          >
+            CSV
+          </button>
+        </div>
+
+        {editMode === "manual" ? (
+          <>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Label (e.g., Jan)"
+                value={manualLabel}
+                onChange={(e) => setManualLabel(e.target.value)}
+                onKeyPress={(e) => e.key === "Enter" && handleAddDataPoint()}
+                className="flex-1 px-3 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent"
+              />
+              <input
+                type="number"
+                placeholder="Value"
+                value={manualValue}
+                onChange={(e) => setManualValue(e.target.value)}
+                onKeyPress={(e) => e.key === "Enter" && handleAddDataPoint()}
+                className="flex-1 px-3 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent"
+              />
+            </div>
+            <button
+              onClick={handleAddDataPoint}
+              className="px-3 py-1 bg-accent text-white text-xs rounded-lg hover:bg-accent-dark calm-transition"
+            >
+              Add Point
+            </button>
+          </>
+        ) : (
+          <>
+            <textarea
+              placeholder="CSV format: Label,Value&#10;Jan,30&#10;Feb,45"
+              value={csvInput}
+              onChange={(e) => setCsvInput(e.target.value)}
+              className="flex-1 p-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent resize-none"
+            />
+            <button
+              onClick={handleCSVImport}
+              className="px-3 py-1 bg-accent text-white text-xs rounded-lg hover:bg-accent-dark calm-transition"
+            >
+              Import CSV
+            </button>
+          </>
+        )}
+        {error && <p className="text-xs text-red-600">{error}</p>}
+        <div className="flex gap-2">
+          <button
+            onClick={() => {
+              setIsEditing(false);
+              setError("");
+              setManualLabel("");
+              setManualValue("");
+              setCsvInput("");
+            }}
+            className="flex-1 px-3 py-1 bg-gray-300 text-gray-700 text-xs rounded-lg hover:bg-gray-400 calm-transition"
+          >
+            Done
+          </button>
+        </div>
       </div>
     );
   }
 
-  const max = Math.max(...data.values);
+  if (!values || values.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-32 space-y-3">
+        <div className="text-gray-400 text-sm">No data available</div>
+        <button
+          onClick={() => setIsEditing(true)}
+          className="px-4 py-2 bg-accent text-white text-sm rounded-lg hover:bg-accent-dark calm-transition"
+        >
+          Add Data
+        </button>
+      </div>
+    );
+  }
+
+  const max = Math.max(...values);
+  const min = 0;
+  const range = max - min || 1;
 
   return (
-    <div className="h-32 flex items-end space-x-2">
-      {data.values.map((value: number, i: number) => (
-        <div key={i} className="flex-1 flex flex-col items-center space-y-2">
+    <div className="flex flex-col space-y-3 h-32">
+      <div className="flex-1 flex items-end space-x-1">
+        {values.map((value: number, i: number) => (
           <div
-            className="w-full bg-analytics rounded-t"
-            style={{ height: `${(value / max) * 100}%` }}
-          />
-          <span className="text-xs text-gray-500">
-            {data.labels && data.labels[i] ? data.labels[i] : ""}
-          </span>
+            key={i}
+            className="flex-1 flex flex-col items-center group relative"
+            title={`${labels[i]}: ${value}`}
+          >
+            <div
+              className="w-full bg-gradient-to-t from-analytics to-analytics rounded-t relative group hover:from-analytics-dark hover:to-analytics-dark calm-transition cursor-pointer"
+              style={{
+                height: `${((value - min) / range) * 100}%`,
+                minHeight: "4px",
+              }}
+              onClick={() => handleRemoveDataPoint(i)}
+            >
+              <div className="opacity-0 group-hover:opacity-100 absolute inset-0 flex items-center justify-center">
+                <svg
+                  className="w-3 h-3 text-white"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                  />
+                </svg>
+              </div>
+            </div>
+            <span className="text-xs text-gray-500 mt-1 truncate max-w-full">
+              {labels[i]}
+            </span>
+          </div>
+        ))}
+      </div>
+      <div className="flex gap-2">
+        <button
+          onClick={() => setIsEditing(true)}
+          className="flex-1 px-3 py-1 border border-gray-300 text-gray-700 text-xs rounded-lg hover:border-accent hover:text-accent calm-transition"
+        >
+          Edit
+        </button>
+        <button
+          onClick={handleClearData}
+          className="flex-1 px-3 py-1 border border-red-300 text-red-700 text-xs rounded-lg hover:border-red-500 hover:text-red-500 calm-transition"
+        >
+          Clear
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function BarChart({ data, onUpdate }: any) {
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [editMode, setEditMode] = React.useState<"manual" | "csv">("manual");
+  const [manualLabel, setManualLabel] = React.useState("");
+  const [manualValue, setManualValue] = React.useState("");
+  const [csvInput, setCsvInput] = React.useState("");
+  const [error, setError] = React.useState("");
+
+  const chartData = data?.values ? data : { values: [], labels: [] };
+  const values = Array.isArray(chartData.values) ? chartData.values : [];
+  const labels = Array.isArray(chartData.labels) ? chartData.labels : [];
+
+  const handleAddDataPoint = () => {
+    if (!manualLabel.trim() || !manualValue.trim()) {
+      setError("Please enter both label and value");
+      return;
+    }
+
+    const numValue = parseFloat(manualValue);
+    if (isNaN(numValue)) {
+      setError("Value must be a number");
+      return;
+    }
+
+    const newValues = [...values, numValue];
+    const newLabels = [...labels, manualLabel];
+
+    onUpdate?.({ values: newValues, labels: newLabels });
+    setManualLabel("");
+    setManualValue("");
+    setError("");
+  };
+
+  const handleCSVImport = () => {
+    if (!csvInput.trim()) {
+      setError("Please enter CSV data");
+      return;
+    }
+
+    try {
+      const lines = csvInput.trim().split("\n");
+      const newLabels: string[] = [];
+      const newValues: number[] = [];
+
+      for (const line of lines) {
+        const parts = line.split(",").map((p) => p.trim());
+        if (parts.length >= 2) {
+          const label = parts[0];
+          const value = parseFloat(parts[1]);
+
+          if (!isNaN(value)) {
+            newLabels.push(label);
+            newValues.push(value);
+          }
+        }
+      }
+
+      if (newValues.length === 0) {
+        setError("No valid data found in CSV");
+        return;
+      }
+
+      onUpdate?.({ values: newValues, labels: newLabels });
+      setCsvInput("");
+      setError("");
+      setIsEditing(false);
+    } catch (err) {
+      setError("Error parsing CSV data");
+    }
+  };
+
+  const handleRemoveDataPoint = (index: number) => {
+    const newValues = values.filter((_: any, i: number) => i !== index);
+    const newLabels = labels.filter((_: any, i: number) => i !== index);
+    onUpdate?.({ values: newValues, labels: newLabels });
+  };
+
+  const handleClearData = () => {
+    onUpdate?.({ values: [], labels: [] });
+  };
+
+  if (isEditing) {
+    return (
+      <div className="flex flex-col space-y-3 h-32">
+        <div className="flex gap-2 mb-2">
+          <button
+            onClick={() => setEditMode("manual")}
+            className={`px-3 py-1 text-xs rounded-lg ${
+              editMode === "manual"
+                ? "bg-accent text-white"
+                : "bg-gray-200 text-gray-700"
+            }`}
+          >
+            Manual
+          </button>
+          <button
+            onClick={() => setEditMode("csv")}
+            className={`px-3 py-1 text-xs rounded-lg ${
+              editMode === "csv"
+                ? "bg-accent text-white"
+                : "bg-gray-200 text-gray-700"
+            }`}
+          >
+            CSV
+          </button>
         </div>
-      ))}
+
+        {editMode === "manual" ? (
+          <>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Label (e.g., Q1)"
+                value={manualLabel}
+                onChange={(e) => setManualLabel(e.target.value)}
+                onKeyPress={(e) => e.key === "Enter" && handleAddDataPoint()}
+                className="flex-1 px-3 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent"
+              />
+              <input
+                type="number"
+                placeholder="Value"
+                value={manualValue}
+                onChange={(e) => setManualValue(e.target.value)}
+                onKeyPress={(e) => e.key === "Enter" && handleAddDataPoint()}
+                className="flex-1 px-3 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent"
+              />
+            </div>
+            <button
+              onClick={handleAddDataPoint}
+              className="px-3 py-1 bg-accent text-white text-xs rounded-lg hover:bg-accent-dark calm-transition"
+            >
+              Add Point
+            </button>
+          </>
+        ) : (
+          <>
+            <textarea
+              placeholder="CSV format: Label,Value&#10;Q1,100&#10;Q2,150"
+              value={csvInput}
+              onChange={(e) => setCsvInput(e.target.value)}
+              className="flex-1 p-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent resize-none"
+            />
+            <button
+              onClick={handleCSVImport}
+              className="px-3 py-1 bg-accent text-white text-xs rounded-lg hover:bg-accent-dark calm-transition"
+            >
+              Import CSV
+            </button>
+          </>
+        )}
+        {error && <p className="text-xs text-red-600">{error}</p>}
+        <div className="flex gap-2">
+          <button
+            onClick={() => {
+              setIsEditing(false);
+              setError("");
+              setManualLabel("");
+              setManualValue("");
+              setCsvInput("");
+            }}
+            className="flex-1 px-3 py-1 bg-gray-300 text-gray-700 text-xs rounded-lg hover:bg-gray-400 calm-transition"
+          >
+            Done
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!values || values.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-32 space-y-3">
+        <div className="text-gray-400 text-sm">No data available</div>
+        <button
+          onClick={() => setIsEditing(true)}
+          className="px-4 py-2 bg-accent text-white text-sm rounded-lg hover:bg-accent-dark calm-transition"
+        >
+          Add Data
+        </button>
+      </div>
+    );
+  }
+
+  const max = Math.max(...values);
+
+  return (
+    <div className="flex flex-col space-y-3 h-32">
+      <div className="flex-1 flex items-end space-x-1">
+        {values.map((value: number, i: number) => (
+          <div
+            key={i}
+            className="flex-1 flex flex-col items-center group relative"
+            title={`${labels[i]}: ${value}`}
+          >
+            <div
+              className="w-full bg-gradient-to-t from-blue-500 to-blue-400 rounded relative group hover:from-blue-600 hover:to-blue-500 calm-transition cursor-pointer"
+              style={{ height: `${(value / max) * 100}%`, minHeight: "4px" }}
+              onClick={() => handleRemoveDataPoint(i)}
+            >
+              <div className="opacity-0 group-hover:opacity-100 absolute inset-0 flex items-center justify-center">
+                <svg
+                  className="w-3 h-3 text-white"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                  />
+                </svg>
+              </div>
+            </div>
+            <span className="text-xs text-gray-500 mt-1 truncate max-w-full">
+              {labels[i]}
+            </span>
+          </div>
+        ))}
+      </div>
+      <div className="flex gap-2">
+        <button
+          onClick={() => setIsEditing(true)}
+          className="flex-1 px-3 py-1 border border-gray-300 text-gray-700 text-xs rounded-lg hover:border-accent hover:text-accent calm-transition"
+        >
+          Edit
+        </button>
+        <button
+          onClick={handleClearData}
+          className="flex-1 px-3 py-1 border border-red-300 text-red-700 text-xs rounded-lg hover:border-red-500 hover:text-red-500 calm-transition"
+        >
+          Clear
+        </button>
+      </div>
     </div>
   );
 }
@@ -138,13 +632,14 @@ function StatCard({ data }: any) {
   );
 }
 
-function NotesWidget({ data }: any) {
+function NotesWidget({ data, onUpdate }: any) {
   const [notes, setNotes] = React.useState(data?.content || "");
   const [isEditing, setIsEditing] = React.useState(false);
   const [tempNotes, setTempNotes] = React.useState(notes);
 
   const handleSave = () => {
     setNotes(tempNotes);
+    onUpdate?.({ content: tempNotes });
     setIsEditing(false);
   };
 
@@ -201,7 +696,7 @@ function NotesWidget({ data }: any) {
   );
 }
 
-function TasksWidget({ data }: any) {
+function TasksWidget({ data, onUpdate }: any) {
   const [tasks, setTasks] = React.useState(data?.tasks || []);
   const [isAdding, setIsAdding] = React.useState(false);
   const [taskInput, setTaskInput] = React.useState("");
@@ -215,6 +710,7 @@ function TasksWidget({ data }: any) {
       };
       const updatedTasks = [...tasks, newTask];
       setTasks(updatedTasks);
+      onUpdate?.({ tasks: updatedTasks });
       setTaskInput("");
       setIsAdding(false);
     }
@@ -225,11 +721,13 @@ function TasksWidget({ data }: any) {
       task.id === id ? { ...task, completed: !task.completed } : task
     );
     setTasks(updatedTasks);
+    onUpdate?.({ tasks: updatedTasks });
   };
 
   const handleRemoveTask = (id: string) => {
     const updatedTasks = tasks.filter((task: any) => task.id !== id);
     setTasks(updatedTasks);
+    onUpdate?.({ tasks: updatedTasks });
   };
 
   if (isAdding) {
@@ -329,11 +827,11 @@ function TasksWidget({ data }: any) {
   );
 }
 
-function LinksWidget({ data }: any) {
-  const [links, setLinks] = require("react").useState(data?.links || []);
-  const [isAdding, setIsAdding] = require("react").useState(false);
-  const [titleInput, setTitleInput] = require("react").useState("");
-  const [urlInput, setUrlInput] = require("react").useState("");
+function LinksWidget({ data, onUpdate }: any) {
+  const [links, setLinks] = React.useState(data?.links || []);
+  const [isAdding, setIsAdding] = React.useState(false);
+  const [titleInput, setTitleInput] = React.useState("");
+  const [urlInput, setUrlInput] = React.useState("");
 
   const handleAddLink = () => {
     if (titleInput.trim() && urlInput.trim()) {
@@ -350,6 +848,7 @@ function LinksWidget({ data }: any) {
       };
       const updatedLinks = [...links, newLink];
       setLinks(updatedLinks);
+      onUpdate?.({ links: updatedLinks });
       setTitleInput("");
       setUrlInput("");
       setIsAdding(false);
@@ -359,6 +858,7 @@ function LinksWidget({ data }: any) {
   const handleRemoveLink = (id: string) => {
     const updatedLinks = links.filter((link: any) => link.id !== id);
     setLinks(updatedLinks);
+    onUpdate?.({ links: updatedLinks });
   };
 
   if (isAdding) {
@@ -475,9 +975,9 @@ function LinksWidget({ data }: any) {
   );
 }
 
-function ClockWidget({ data }: any) {
+function ClockWidget({ data, onUpdate }: any) {
   const [currentTime, setCurrentTime] = React.useState<string>("");
-  const [isEditing, setIsEditing] = require("react").useState(false);
+  const [isEditing, setIsEditing] = React.useState(false);
   const [timezoneInput, setTimezoneInput] = React.useState<string>(
     data?.timezone || ""
   );
@@ -540,17 +1040,16 @@ function ClockWidget({ data }: any) {
   const handleSetTimezone = () => {
     if (timezoneInput.trim()) {
       setSelectedTimezone(timezoneInput);
+      onUpdate?.({ timezone: timezoneInput });
       setIsEditing(false);
       setTimezoneInput("");
     }
   };
 
   const handleSelectPreset = (timezone: string | null) => {
-    if (timezone === null) {
-      setSelectedTimezone("");
-    } else {
-      setSelectedTimezone(timezone);
-    }
+    const newTz = timezone === null ? "" : timezone;
+    setSelectedTimezone(newTz);
+    onUpdate?.({ timezone: newTz });
     setIsEditing(false);
     setTimezoneInput("");
   };
@@ -638,7 +1137,7 @@ function ClockWidget({ data }: any) {
 }
 
 // CountdownWidget component implementation
-function CountdownWidget({ data }: any) {
+function CountdownWidget({ data, onUpdate }: any) {
   const [timeLeft, setTimeLeft] = React.useState<number | null>(null);
   const [isRunning, setIsRunning] = React.useState(false);
   const [isEditing, setIsEditing] = React.useState(false);
@@ -678,6 +1177,7 @@ function CountdownWidget({ data }: any) {
       const seconds = parseTimeInput(inputTime);
       if (seconds > 0) {
         setTimeLeft(seconds);
+        onUpdate?.({ timeInSeconds: seconds });
         setIsEditing(false);
         setInputTime("");
       }
