@@ -56,7 +56,7 @@ export function useInfiniteCanvas(): UseInfiniteCanvasReturn {
       // Allow panning only on empty canvas (right-click or left-click on canvas background)
       const target = e.target as HTMLElement;
       const isCanvasBackground = target === canvasRef.current;
-      
+
       // Right-click or left-click on empty canvas background
       if (isCanvasBackground && !isPanningDisabled) {
         if (e.button === 2 || e.button === 0) {

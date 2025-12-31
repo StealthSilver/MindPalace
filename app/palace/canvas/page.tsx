@@ -145,7 +145,7 @@ export default function CanvasPage() {
 
   const handleNodeDragStart = useCallback(
     (e: React.MouseEvent, node: Node) => {
-      // Only allow left-click to drag
+      // Only allow left-click to drag cards
       if (e.button !== 0) return;
 
       e.stopPropagation();
@@ -169,6 +169,7 @@ export default function CanvasPage() {
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent) => {
+      // Handle card dragging
       if (draggingNode && canvasRef.current) {
         const rect = canvasRef.current.getBoundingClientRect();
         const worldPos = screenToWorld(
@@ -290,7 +291,7 @@ export default function CanvasPage() {
         type: "tweet",
         x: worldPos.x,
         y: worldPos.y,
-        width: 350,
+        width: 320,
         height: 400,
         content: "",
         tweetUrl,
@@ -320,8 +321,8 @@ export default function CanvasPage() {
         type: "image",
         x: worldPos.x,
         y: worldPos.y,
-        width: 300,
-        height: 300,
+        width: 320,
+        height: 320,
         content: "",
         imageUrl,
       };

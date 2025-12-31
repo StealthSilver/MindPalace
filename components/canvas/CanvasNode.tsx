@@ -224,6 +224,7 @@ export default function CanvasNode({
                   value={linkName}
                   onChange={(e) => setLinkName(e.target.value)}
                   onBlur={handleBlur}
+                  onMouseDown={(e) => e.stopPropagation()}
                   autoFocus
                   className="w-full px-2 py-1 bg-transparent border border-gray-300 rounded text-gray-800 text-sm"
                   style={{ fontSize: `${14 / scale}px` }}
@@ -238,6 +239,7 @@ export default function CanvasNode({
                   value={linkUrl}
                   onChange={(e) => setLinkUrl(e.target.value)}
                   onBlur={handleBlur}
+                  onMouseDown={(e) => e.stopPropagation()}
                   className="w-full px-2 py-1 bg-transparent border border-gray-300 rounded text-gray-800 text-sm"
                   style={{ fontSize: `${14 / scale}px` }}
                 />
@@ -283,6 +285,7 @@ export default function CanvasNode({
                       onChange={() => toggleTodo(todo.id)}
                       className="mt-1 w-4 h-4 cursor-pointer"
                       onClick={(e) => e.stopPropagation()}
+                      onMouseDown={(e) => e.stopPropagation()}
                     />
                     {editingTodoId === todo.id ? (
                       <input
@@ -299,10 +302,11 @@ export default function CanvasNode({
                             setEditingTodoId(null);
                           }
                         }}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onClick={(e) => e.stopPropagation()}
                         autoFocus
                         className="flex-1 px-2 py-1 bg-transparent border border-gray-300 rounded text-gray-800 text-sm"
                         style={{ fontSize: `${12 / scale}px` }}
-                        onClick={(e) => e.stopPropagation()}
                       />
                     ) : (
                       <span
@@ -353,6 +357,7 @@ export default function CanvasNode({
                       addTodo();
                     }
                   }}
+                  onMouseDown={(e) => e.stopPropagation()}
                   onClick={(e) => e.stopPropagation()}
                   onMouseDown={(e) => e.stopPropagation()}
                   placeholder="Add a todo..."
@@ -384,6 +389,7 @@ export default function CanvasNode({
                 value={tweetUrl}
                 onChange={(e) => setTweetUrl(e.target.value)}
                 onBlur={handleBlur}
+                onMouseDown={(e) => e.stopPropagation()}
                 autoFocus
                 placeholder="https://twitter.com/user/status/..."
                 className="w-full px-2 py-1 bg-transparent border border-gray-300 rounded text-gray-800 text-sm"
@@ -391,25 +397,25 @@ export default function CanvasNode({
               />
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="h-full w-full flex flex-col items-center justify-center bg-gray-100 rounded overflow-hidden">
               {tweetUrl ? (
-                <div className="flex flex-col items-center justify-center h-full gap-2">
-                  <div className="text-sm text-gray-600">Tweet embedded</div>
-                  <iframe
-                    src={`https://platform.twitter.com/embed/Tweet.html?id=${extractTweetId(
-                      tweetUrl
-                    )}&theme=light`}
-                    width="100%"
-                    height="auto"
-                    frameBorder="0"
-                    scrolling="no"
-                    allowFullScreen
-                    className="twitter-tweet"
-                    style={{ minHeight: "100px" }}
-                  />
-                </div>
+                <iframe
+                  src={`https://platform.twitter.com/embed/Tweet.html?id=${extractTweetId(
+                    tweetUrl
+                  )}&theme=light`}
+                  width="100%"
+                  height="100%"
+                  frameBorder="0"
+                  scrolling="no"
+                  allowFullScreen
+                  className="twitter-tweet"
+                  style={{
+                    minHeight: "280px",
+                    width: "100%",
+                  }}
+                />
               ) : (
-                <div className="text-gray-500 text-sm text-center h-full flex items-center justify-center">
+                <div className="text-gray-500 text-sm text-center">
                   Double-click to add tweet URL
                 </div>
               )}
@@ -427,6 +433,7 @@ export default function CanvasNode({
                   value={imageUrl}
                   onChange={(e) => setImageUrl(e.target.value)}
                   onBlur={handleBlur}
+                  onMouseDown={(e) => e.stopPropagation()}
                   autoFocus
                   placeholder="https://example.com/image.jpg"
                   className="w-full px-2 py-1 bg-transparent border border-gray-300 rounded text-gray-800 text-sm"
@@ -456,12 +463,12 @@ export default function CanvasNode({
               />
             </div>
           ) : (
-            <div className="space-y-2 h-full flex flex-col items-center justify-center">
+            <div className="h-full w-full flex flex-col items-center justify-center bg-gray-100 rounded overflow-hidden">
               {imageUrl ? (
                 <img
                   src={imageUrl}
                   alt="Canvas image"
-                  className="max-w-full max-h-full object-contain rounded"
+                  className="w-full h-full object-cover"
                   onError={(e) => {
                     console.error("Image failed to load");
                   }}
@@ -478,6 +485,7 @@ export default function CanvasNode({
             value={content}
             onChange={(e) => setContent(e.target.value)}
             onBlur={handleBlur}
+            onMouseDown={(e) => e.stopPropagation()}
             autoFocus
             className="w-full h-full bg-transparent border-none outline-none resize-none text-gray-800"
             style={{ fontSize: `${16 / scale}px` }}
