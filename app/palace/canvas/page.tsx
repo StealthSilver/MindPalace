@@ -410,21 +410,40 @@ export default function CanvasPage() {
         {/* Empty State */}
         {nodes.length === 0 && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="text-center space-y-4">
-              <p className="text-2xl text-gray-400 font-light">
-                Start anywhere. Structure can come later.
-              </p>
-              <p className="text-gray-400">Click anywhere to create a node</p>
+            <div className="text-center space-y-6">
+              <div className="w-20 h-20 bg-gray-100 rounded-full mx-auto flex items-center justify-center">
+                <svg
+                  className="w-10 h-10 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <p className="text-2xl font-semibold text-gray-700">
+                  Start anywhere. Structure comes later.
+                </p>
+                <p className="text-gray-500 mt-2">
+                  Double-click to create your first node
+                </p>
+              </div>
             </div>
           </div>
         )}
 
         {/* Zoom Controls */}
-        <div className="absolute bottom-6 right-6 bg-white rounded-lg shadow-medium border border-gray-200 p-2 flex flex-col space-y-2">
+        <div className="absolute bottom-8 right-8 bg-white rounded-xl shadow-lift border border-gray-200 p-1 flex flex-col space-y-0">
           <button
             onClick={handleZoomIn}
-            className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded calm-transition text-gray-600"
-            title="Zoom in (⌘ +)"
+            className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-lg calm-transition text-gray-600 font-medium"
+            title="Zoom in"
           >
             <svg
               className="w-5 h-5"
@@ -440,13 +459,13 @@ export default function CanvasPage() {
               />
             </svg>
           </button>
-          <div className="text-xs text-center text-gray-500 py-1 w-10">
+          <div className="text-xs text-center text-gray-500 py-1.5 w-10 font-semibold">
             {Math.round(canvasState.scale * 100)}%
           </div>
           <button
             onClick={handleZoomOut}
-            className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded calm-transition text-gray-600"
-            title="Zoom out (⌘ -)"
+            className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-lg calm-transition text-gray-600 font-medium"
+            title="Zoom out"
           >
             <svg
               className="w-5 h-5"
@@ -462,12 +481,13 @@ export default function CanvasPage() {
               />
             </svg>
           </button>
+          <div className="h-px bg-gray-200"></div>
           <button
             onClick={handleZoomReset}
-            className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded calm-transition text-gray-600 text-xs font-semibold"
-            title="Reset zoom (⌘ 0)"
+            className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-lg calm-transition text-gray-600 text-xs font-bold"
+            title="Reset zoom"
           >
-            1x
+            1:1
           </button>
         </div>
       </div>
@@ -480,7 +500,7 @@ export default function CanvasPage() {
             onClick={() => setShowNodeMenu(false)}
           />
           <div
-            className="fixed z-50 bg-white rounded-xl shadow-lift border border-gray-200 p-2 animate-scale-in"
+            className="fixed z-50 bg-white rounded-xl shadow-lift border border-gray-200 p-2 animate-scale-in backdrop-blur-sm"
             style={{
               left: menuPosition.x,
               top: menuPosition.y,
@@ -488,16 +508,16 @@ export default function CanvasPage() {
           >
             <div className="space-y-1 min-w-[160px]">
               {[
-                { type: "note" as NodeType, label: "Note", color: "note" },
-                { type: "link" as NodeType, label: "Link", color: "link" },
-                { type: "todo" as NodeType, label: "Todo", color: "todo" },
-                { type: "image" as NodeType, label: "Image", color: "image" },
-                { type: "tweet" as NodeType, label: "Tweet", color: "image" },
+                { type: "note" as NodeType, label: "Note" },
+                { type: "link" as NodeType, label: "Link" },
+                { type: "todo" as NodeType, label: "Todo" },
+                { type: "image" as NodeType, label: "Image" },
+                { type: "tweet" as NodeType, label: "Tweet" },
               ].map((item) => (
                 <button
                   key={item.type}
                   onClick={() => createNode(item.type)}
-                  className={`w-full text-left px-4 py-2 rounded-lg hover:bg-${item.color}-light calm-transition text-sm`}
+                  className="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 calm-transition text-sm font-medium text-gray-700"
                 >
                   {item.label}
                 </button>
@@ -511,16 +531,16 @@ export default function CanvasPage() {
       {showLinkModal && (
         <>
           <div
-            className="fixed inset-0 z-40 bg-black/50"
+            className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm"
             onClick={() => setShowLinkModal(false)}
           />
-          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 bg-white rounded-xl shadow-lift border border-gray-200 p-6 w-96">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 bg-white rounded-2xl shadow-lift border border-gray-200 p-8 w-96 animate-scale-in">
+            <h2 className="text-2xl font-bold text-foreground mb-6">
               Add Link
             </h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Link Name
                 </label>
                 <input
@@ -528,12 +548,12 @@ export default function CanvasPage() {
                   value={linkName}
                   onChange={(e) => setLinkName(e.target.value)}
                   placeholder="e.g., My Blog"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent calm-transition"
                   autoFocus
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
                   URL
                 </label>
                 <input
@@ -541,19 +561,19 @@ export default function CanvasPage() {
                   value={linkUrl}
                   onChange={(e) => setLinkUrl(e.target.value)}
                   placeholder="e.g., https://example.com"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent calm-transition"
                 />
               </div>
-              <div className="flex gap-2 justify-end pt-4">
+              <div className="flex gap-3 justify-end pt-6">
                 <button
                   onClick={() => setShowLinkModal(false)}
-                  className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 calm-transition font-medium"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={saveLinkNode}
-                  className="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-dark"
+                  className="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-dark calm-transition font-medium shadow-soft"
                 >
                   Save
                 </button>
@@ -567,16 +587,16 @@ export default function CanvasPage() {
       {showTweetModal && (
         <>
           <div
-            className="fixed inset-0 z-40 bg-black/50"
+            className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm"
             onClick={() => setShowTweetModal(false)}
           />
-          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 bg-white rounded-xl shadow-lift border border-gray-200 p-6 w-96">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 bg-white rounded-2xl shadow-lift border border-gray-200 p-8 w-96 animate-scale-in">
+            <h2 className="text-2xl font-bold text-foreground mb-6">
               Add Tweet
             </h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Tweet URL
                 </label>
                 <input
@@ -584,20 +604,20 @@ export default function CanvasPage() {
                   value={tweetUrl}
                   onChange={(e) => setTweetUrl(e.target.value)}
                   placeholder="e.g., https://twitter.com/user/status/1234567890"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent calm-transition"
                   autoFocus
                 />
               </div>
-              <div className="flex gap-2 justify-end pt-4">
+              <div className="flex gap-3 justify-end pt-6">
                 <button
                   onClick={() => setShowTweetModal(false)}
-                  className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 calm-transition font-medium"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={saveTweetNode}
-                  className="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-dark"
+                  className="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-dark calm-transition font-medium shadow-soft"
                 >
                   Save
                 </button>
@@ -611,16 +631,16 @@ export default function CanvasPage() {
       {showImageModal && (
         <>
           <div
-            className="fixed inset-0 z-40 bg-black/50"
+            className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm"
             onClick={() => setShowImageModal(false)}
           />
-          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 bg-white rounded-xl shadow-lift border border-gray-200 p-6 w-96 max-h-96 overflow-y-auto">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 bg-white rounded-2xl shadow-lift border border-gray-200 p-8 w-96 max-h-[90vh] overflow-y-auto animate-scale-in">
+            <h2 className="text-2xl font-bold text-foreground mb-6">
               Add Image
             </h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Image URL
                 </label>
                 <input
@@ -628,7 +648,7 @@ export default function CanvasPage() {
                   value={imageUrl}
                   onChange={(e) => setImageUrl(e.target.value)}
                   placeholder="e.g., https://example.com/image.jpg"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent calm-transition"
                   autoFocus
                 />
               </div>
@@ -641,7 +661,7 @@ export default function CanvasPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Upload Image
                 </label>
                 <input
@@ -658,40 +678,40 @@ export default function CanvasPage() {
                       reader.readAsDataURL(file);
                     }
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent cursor-pointer"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent calm-transition cursor-pointer file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:font-medium file:bg-accent file:text-white hover:file:bg-accent-dark"
                 />
-                <p className="text-xs text-gray-500 mt-1">
-                  Supported formats: JPG, PNG, GIF, WebP
+                <p className="text-xs text-gray-500 mt-2">
+                  Supported formats: JPG, PNG, GIF, WebP (Max 5MB)
                 </p>
               </div>
               {imageUrl && (
                 <div className="mt-4">
-                  <p className="text-sm font-medium text-gray-700 mb-2">
+                  <p className="text-sm font-semibold text-gray-700 mb-2">
                     Preview:
                   </p>
                   <img
                     src={imageUrl}
                     alt="Preview"
-                    className="w-full max-h-40 object-cover rounded-lg"
+                    className="w-full max-h-40 object-cover rounded-lg border border-gray-200"
                     onError={() => {
                       alert("Failed to load image");
                     }}
                   />
                 </div>
               )}
-              <div className="flex gap-2 justify-end pt-4">
+              <div className="flex gap-3 justify-end pt-6">
                 <button
                   onClick={() => {
                     setShowImageModal(false);
                     setImageUrl("");
                   }}
-                  className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 calm-transition font-medium"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={saveImageNode}
-                  className="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-dark disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-dark calm-transition font-medium shadow-soft disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={!imageUrl}
                 >
                   Save

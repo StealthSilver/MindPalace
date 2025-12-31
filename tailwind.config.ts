@@ -39,14 +39,19 @@ const config: Config = {
           dark: "#7EC8E3",
         },
         image: {
-          light: "#D2C4E4",
-          DEFAULT: "#D2C4E4",
-          dark: "#BBA5D8",
+          light: "#F5C5C5",
+          DEFAULT: "#F5C5C5",
+          dark: "#ED9999",
         },
         todo: {
           light: "#BFE3BC",
           DEFAULT: "#BFE3BC",
           dark: "#A0D9A0",
+        },
+        tweet: {
+          light: "#E8D7F1",
+          DEFAULT: "#E8D7F1",
+          dark: "#D4B8E8",
         },
         analytics: {
           light: "#B2D7EC",
