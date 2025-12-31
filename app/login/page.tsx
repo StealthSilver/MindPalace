@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import Logo from "@/components/shared/Logo";
+// TODO: Ensure the Logo component exists at the correct path or update the import path below
+// import Logo from "@/components/shared/Logo";
 
 export default function LoginPage() {
   const { login } = useAuth();
