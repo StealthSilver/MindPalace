@@ -99,6 +99,10 @@ export default function DashboardPage() {
           return {
             timezone: "",
           };
+        case "weather":
+          return {
+            location: "",
+          };
         default:
           return {};
       }
@@ -235,12 +239,12 @@ export default function DashboardPage() {
                 { type: "clock", label: "Clock", color: "accent" },
                 { type: "countdown", label: "Countdown", color: "accent" },
                 { type: "links", label: "Links", color: "accent" },
+                { type: "weather", label: "Weather", color: "accent" },
                 { type: "chart-line", label: "Line Chart", color: "analytics" },
-                { type: "chart-bar", label: "Bar Chart", color: "analytics" },
-                { type: "stat-card", label: "Stat Card", color: "analytics" },
                 { type: "notes", label: "Notes", color: "accent" },
                 { type: "tasks", label: "Tasks", color: "accent" },
-                { type: "weather", label: "Weather", color: "accent" },
+                { type: "chart-bar", label: "Bar Chart", color: "analytics" },
+                { type: "stat-card", label: "Stat Card", color: "analytics" },
               ].map((widgetType) => (
                 <button
                   key={widgetType.type}

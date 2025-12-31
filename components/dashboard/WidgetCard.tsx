@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { Widget } from "@/types";
 
 interface WidgetCardProps {
@@ -29,6 +30,8 @@ export default function WidgetCard({
         return <ClockWidget data={widget.data} />;
       case "countdown":
         return <CountdownWidget data={widget.data} />;
+      case "weather":
+        return <WeatherWidget data={widget.data} />;
       default:
         return (
           <div className="text-gray-400 text-sm">
@@ -136,42 +139,192 @@ function StatCard({ data }: any) {
 }
 
 function NotesWidget({ data }: any) {
+  const [notes, setNotes] = React.useState(data?.content || "");
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [tempNotes, setTempNotes] = React.useState(notes);
+
+  const handleSave = () => {
+    setNotes(tempNotes);
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setTempNotes(notes);
+    setIsEditing(false);
+  };
+
+  if (isEditing) {
+    return (
+      <div className="flex flex-col space-y-3 h-32">
+        <textarea
+          value={tempNotes}
+          onChange={(e) => setTempNotes(e.target.value)}
+          placeholder="Write your notes here..."
+          className="flex-1 p-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent resize-none"
+          autoFocus
+        />
+        <div className="flex gap-2">
+          <button
+            onClick={handleSave}
+            className="flex-1 px-3 py-1 bg-accent text-white text-xs rounded-lg hover:bg-accent-dark calm-transition"
+          >
+            Save
+          </button>
+          <button
+            onClick={handleCancel}
+            className="flex-1 px-3 py-1 bg-gray-300 text-gray-700 text-xs rounded-lg hover:bg-gray-400 calm-transition"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-note-light rounded-lg p-4 h-32">
-      <p className="text-gray-700 text-sm">
-        {data?.content || "Click to add notes..."}
-      </p>
+    <div className="flex flex-col space-y-3 h-32">
+      <div className="flex-1 bg-gray-50 rounded-lg p-3 border border-gray-200 overflow-y-auto">
+        <p className="text-gray-700 text-sm whitespace-pre-wrap">
+          {notes || "No notes yet. Click 'Edit' to add notes."}
+        </p>
+      </div>
+      <button
+        onClick={() => {
+          setTempNotes(notes);
+          setIsEditing(true);
+        }}
+        className="px-4 py-2 border border-gray-300 text-gray-700 text-sm rounded-lg hover:border-accent hover:text-accent calm-transition"
+      >
+        Edit
+      </button>
     </div>
   );
 }
 
 function TasksWidget({ data }: any) {
-  if (!data || !data.tasks || data.tasks.length === 0) {
-    return <div className="text-gray-400 text-sm">No tasks yet</div>;
+  const [tasks, setTasks] = React.useState(data?.tasks || []);
+  const [isAdding, setIsAdding] = React.useState(false);
+  const [taskInput, setTaskInput] = React.useState("");
+
+  const handleAddTask = () => {
+    if (taskInput.trim()) {
+      const newTask = {
+        id: `task-${Date.now()}`,
+        text: taskInput,
+        completed: false,
+      };
+      const updatedTasks = [...tasks, newTask];
+      setTasks(updatedTasks);
+      setTaskInput("");
+      setIsAdding(false);
+    }
+  };
+
+  const toggleTaskComplete = (id: string) => {
+    const updatedTasks = tasks.map((task: any) =>
+      task.id === id ? { ...task, completed: !task.completed } : task
+    );
+    setTasks(updatedTasks);
+  };
+
+  const handleRemoveTask = (id: string) => {
+    const updatedTasks = tasks.filter((task: any) => task.id !== id);
+    setTasks(updatedTasks);
+  };
+
+  if (isAdding) {
+    return (
+      <div className="flex flex-col space-y-3 h-32">
+        <input
+          type="text"
+          placeholder="Add a new task..."
+          value={taskInput}
+          onChange={(e) => setTaskInput(e.target.value)}
+          onKeyPress={(e) => e.key === "Enter" && handleAddTask()}
+          className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent"
+          autoFocus
+        />
+        <div className="flex gap-2">
+          <button
+            onClick={handleAddTask}
+            className="flex-1 px-3 py-1 bg-accent text-white text-xs rounded-lg hover:bg-accent-dark calm-transition"
+          >
+            Add
+          </button>
+          <button
+            onClick={() => {
+              setIsAdding(false);
+              setTaskInput("");
+            }}
+            className="flex-1 px-3 py-1 bg-gray-300 text-gray-700 text-xs rounded-lg hover:bg-gray-400 calm-transition"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (tasks.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-32 space-y-3">
+        <div className="text-gray-400 text-sm">No tasks yet</div>
+        <button
+          onClick={() => setIsAdding(true)}
+          className="px-4 py-2 bg-accent text-white text-sm rounded-lg hover:bg-accent-dark calm-transition"
+        >
+          + Add Task
+        </button>
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-2">
-      {data.tasks.map((task: any) => (
-        <label
+    <div className="flex flex-col space-y-2 h-32 overflow-y-auto">
+      {tasks.map((task: any) => (
+        <div
           key={task.id}
-          className="flex items-center space-x-3 cursor-pointer group"
+          className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 group calm-transition"
         >
           <input
             type="checkbox"
             checked={task.completed || false}
-            readOnly
-            className="w-4 h-4 rounded border-gray-300 text-todo focus:ring-todo"
+            onChange={() => toggleTaskComplete(task.id)}
+            className="w-4 h-4 rounded border-gray-300 text-accent cursor-pointer"
           />
           <span
-            className={`text-sm ${
+            className={`flex-1 text-sm ${
               task.completed ? "line-through text-gray-400" : "text-gray-700"
             }`}
           >
             {task.text}
           </span>
-        </label>
+          <button
+            onClick={() => handleRemoveTask(task.id)}
+            className="opacity-0 group-hover:opacity-100 calm-transition text-gray-400 hover:text-red-500"
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
       ))}
+      <button
+        onClick={() => setIsAdding(true)}
+        className="mt-2 px-3 py-1 text-xs text-accent border border-accent rounded-lg hover:bg-accent hover:text-white calm-transition"
+      >
+        + Add Task
+      </button>
     </div>
   );
 }
@@ -323,14 +476,15 @@ function LinksWidget({ data }: any) {
 }
 
 function ClockWidget({ data }: any) {
-  const [currentTime, setCurrentTime] = require("react").useState<string>("");
+  const [currentTime, setCurrentTime] = React.useState<string>("");
   const [isEditing, setIsEditing] = require("react").useState(false);
-  const [timezoneInput, setTimezoneInput] = require("react").useState<string>(
+  const [timezoneInput, setTimezoneInput] = React.useState<string>(
     data?.timezone || ""
   );
-  const [selectedTimezone, setSelectedTimezone] =
-    require("react").useState<string>(data?.timezone || "");
-  const timerRef = require("react").useRef<NodeJS.Timeout | null>(null);
+  const [selectedTimezone, setSelectedTimezone] = React.useState<string>(
+    data?.timezone || ""
+  );
+  const timerRef = React.useRef<NodeJS.Timeout | null>(null);
 
   const commonTimezones = [
     { name: "Browser Default", offset: null },
@@ -483,14 +637,13 @@ function ClockWidget({ data }: any) {
   );
 }
 
+// CountdownWidget component implementation
 function CountdownWidget({ data }: any) {
-  const [timeLeft, setTimeLeft] = require("react").useState<number | null>(
-    null
-  );
-  const [isRunning, setIsRunning] = require("react").useState(false);
-  const [isEditing, setIsEditing] = require("react").useState(false);
-  const [inputTime, setInputTime] = require("react").useState<string>("");
-  const timerRef = require("react").useRef<NodeJS.Timeout | null>(null);
+  const [timeLeft, setTimeLeft] = React.useState<number | null>(null);
+  const [isRunning, setIsRunning] = React.useState(false);
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [inputTime, setInputTime] = React.useState<string>("");
+  const timerRef = React.useRef<NodeJS.Timeout | null>(null);
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -559,7 +712,7 @@ function CountdownWidget({ data }: any) {
     if (timerRef.current) clearInterval(timerRef.current);
   };
 
-  require("react").useEffect(() => {
+  React.useEffect(() => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
@@ -646,6 +799,261 @@ function CountdownWidget({ data }: any) {
           Reset
         </button>
       </div>
+    </div>
+  );
+}
+
+function WeatherWidget({ data }: any) {
+  const [weather, setWeather] = React.useState<any>(null);
+  const [aqi, setAqi] = React.useState<any>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [location, setLocation] = React.useState(data?.location || "");
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [searchInput, setSearchInput] = React.useState("");
+  const [error, setError] = React.useState("");
+
+  const fetchWeatherAndAQI = React.useCallback(
+    async (lat: number, lon: number) => {
+      try {
+        setError("");
+        setLoading(true);
+
+        // Fetch weather data from OpenWeatherMap
+        const weatherResponse = await fetch(
+          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&timezone=auto`
+        );
+        const weatherData = await weatherResponse.json();
+
+        // Fetch AQI data
+        const aqiResponse = await fetch(
+          `https://api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=us_aqi,pm2_5`
+        );
+        const aqiData = await aqiResponse.json();
+
+        // Get location name using reverse geocoding
+        const geoResponse = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`
+        );
+        const geoData = await geoResponse.json();
+        const locationName =
+          geoData.address?.city ||
+          geoData.address?.town ||
+          geoData.address?.county ||
+          "Unknown Location";
+
+        setWeather({
+          ...weatherData.current,
+          location: locationName,
+          timezone: weatherData.timezone,
+        });
+        setAqi(aqiData.current);
+        setLocation(locationName);
+      } catch (err) {
+        setError("Failed to fetch weather data");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
+  const getWeatherDescription = (code: number) => {
+    const weatherCodes: { [key: number]: string } = {
+      0: "Clear",
+      1: "Mainly clear",
+      2: "Partly cloudy",
+      3: "Overcast",
+      45: "Foggy",
+      48: "Foggy",
+      51: "Light drizzle",
+      53: "Moderate drizzle",
+      55: "Dense drizzle",
+      61: "Slight rain",
+      63: "Moderate rain",
+      65: "Heavy rain",
+      71: "Slight snow",
+      73: "Moderate snow",
+      75: "Heavy snow",
+      77: "Snow grains",
+      80: "Slight showers",
+      81: "Moderate showers",
+      82: "Violent showers",
+      85: "Slight snow showers",
+      86: "Heavy snow showers",
+      95: "Thunderstorm",
+      96: "Thunderstorm with hail",
+      99: "Thunderstorm with hail",
+    };
+    return weatherCodes[code] || "Unknown";
+  };
+
+  const getAQIColor = (aqi: number) => {
+    if (aqi <= 50) return "text-green-600";
+    if (aqi <= 100) return "text-yellow-600";
+    if (aqi <= 150) return "text-orange-600";
+    if (aqi <= 200) return "text-red-600";
+    if (aqi <= 300) return "text-purple-600";
+    return "text-red-900";
+  };
+
+  const getAQILabel = (aqi: number) => {
+    if (aqi <= 50) return "Good";
+    if (aqi <= 100) return "Moderate";
+    if (aqi <= 150) return "Unhealthy for Sensitive";
+    if (aqi <= 200) return "Unhealthy";
+    if (aqi <= 300) return "Very Unhealthy";
+    return "Hazardous";
+  };
+
+  const handleGetLocation = () => {
+    if ("geolocation" in navigator) {
+      setLoading(true);
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          fetchWeatherAndAQI(
+            position.coords.latitude,
+            position.coords.longitude
+          );
+        },
+        (err) => {
+          setError("Location access denied. Please search for a location.");
+          setLoading(false);
+        }
+      );
+    }
+  };
+
+  const handleSearchLocation = async () => {
+    if (!searchInput.trim()) return;
+
+    try {
+      setError("");
+      setLoading(true);
+
+      // Geocode location using Nominatim
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+          searchInput
+        )}`
+      );
+      const results = await response.json();
+
+      if (results.length === 0) {
+        setError("Location not found");
+        setLoading(false);
+        return;
+      }
+
+      const { lat, lon } = results[0];
+      setSearchInput("");
+      setIsEditing(false);
+      fetchWeatherAndAQI(parseFloat(lat), parseFloat(lon));
+    } catch (err) {
+      setError("Failed to search location");
+      setLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    if (!weather) {
+      handleGetLocation();
+    }
+  }, []);
+
+  if (loading && !weather) {
+    return (
+      <div className="flex flex-col items-center justify-center h-32 space-y-3">
+        <div className="w-8 h-8 border-3 border-accent border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-sm text-gray-600">Loading weather...</p>
+      </div>
+    );
+  }
+
+  if (isEditing) {
+    return (
+      <div className="flex flex-col space-y-3 h-32">
+        <input
+          type="text"
+          placeholder="Search location (e.g., New York, London)"
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          onKeyPress={(e) => e.key === "Enter" && handleSearchLocation()}
+          className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent"
+          autoFocus
+        />
+        {error && <p className="text-xs text-red-600">{error}</p>}
+        <div className="flex gap-2">
+          <button
+            onClick={handleSearchLocation}
+            className="flex-1 px-3 py-1 bg-accent text-white text-xs rounded-lg hover:bg-accent-dark calm-transition"
+          >
+            Search
+          </button>
+          <button
+            onClick={() => {
+              setIsEditing(false);
+              setSearchInput("");
+              setError("");
+            }}
+            className="flex-1 px-3 py-1 bg-gray-300 text-gray-700 text-xs rounded-lg hover:bg-gray-400 calm-transition"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (error && !weather) {
+    return (
+      <div className="flex flex-col items-center justify-center h-32 space-y-3">
+        <p className="text-sm text-red-600">{error}</p>
+        <button
+          onClick={() => setIsEditing(true)}
+          className="px-4 py-2 bg-accent text-white text-sm rounded-lg hover:bg-accent-dark calm-transition"
+        >
+          Search Location
+        </button>
+      </div>
+    );
+  }
+
+  if (!weather) return null;
+
+  return (
+    <div className="flex flex-col space-y-3 h-32">
+      <div>
+        <p className="text-xs text-gray-500">{location}</p>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <span className="text-3xl font-bold text-foreground">
+              {Math.round(weather.temperature_2m)}°C
+            </span>
+            <span className="text-sm text-gray-600 ml-2">
+              {getWeatherDescription(weather.weather_code)}
+            </span>
+          </div>
+          {aqi && (
+            <div className="text-right">
+              <p className={`text-sm font-semibold ${getAQIColor(aqi.us_aqi)}`}>
+                AQI {Math.round(aqi.us_aqi)}
+              </p>
+              <p className="text-xs text-gray-500">{getAQILabel(aqi.us_aqi)}</p>
+            </div>
+          )}
+        </div>
+      </div>
+      <div className="flex justify-between text-xs text-gray-600">
+        <span>Humidity: {weather.relative_humidity_2m}%</span>
+        <span>Wind: {Math.round(weather.wind_speed_10m)} km/h</span>
+      </div>
+      <button
+        onClick={() => setIsEditing(true)}
+        className="px-4 py-1 border border-gray-300 text-gray-700 text-xs rounded-lg hover:border-accent hover:text-accent calm-transition"
+      >
+        Change Location
+      </button>
     </div>
   );
 }
